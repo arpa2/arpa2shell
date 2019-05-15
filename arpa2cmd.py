@@ -1,4 +1,5 @@
-# arpa2shell is a base class for ARPA2 command interpreters.
+# arpa2cmd is a base class for ARPA2 command interpreters.
+# It shows itself as arpa2shell, from which it usually runs.
 #
 # These interpreters can be told to know_about each other
 # and call each other when combined with the meta-shell of
@@ -7,16 +8,25 @@
 # From: Rick van Rein <rick@openfortress.nl>
 
 
+import sys
+import time
+
 import cmd
+from cmdparser import cmdparser
 
 import types
 
 
 
+@cmdparser.CmdClassDecorator()
 class Cmd (cmd.Cmd):
 
+	version = (0,0)
 	prompt = 'arpa2shell> '
-	intro = 'The ARPA2 shell drops in on a variety of sub-shells.'
+	intro = 'The ARPA2 generic command shell offers basic support to actual shells.'
+
+	gss_name = None
+	gss_life = None
 
 	"""General class for switching between shells.
 	   It relies on do_arpa2xxx functions in each and
@@ -28,12 +38,100 @@ class Cmd (cmd.Cmd):
 	   except in the case of ARPA2shell which has none
 	   above it.
 	"""
-	def __init__ (self, *args):
+	def __init__ (self, *args, **kwargs):
+		cmd.Cmd.__init__ (self, *args, **kwargs)
 		self.known = [ ]
 		self.next_shell = None
-		cmd.Cmd.__init__ (self, *args)
+		self.reset ()
 
-	"""Termination commands.
+	def reset (self):
+		"""Actual shells would override the reset
+		   method such that they remove traces of
+		   command history.  This is called from
+		   __init__() and can be overridden in
+		   subclasses.  Subclasses should also
+		   call their superclass method to ensure
+		   proper resetting.
+		"""
+		pass
+
+	@cmdparser.CmdMethodDecorator()
+	def do_help (self, args, fields):
+		"""help [<cmd>]
+		   
+		   Trigger the help command in the superclass, but apply
+		   the cmdparser wrapper so it can be called over JSON.
+		   There is a shorthand notation, namely a question mark.
+		"""
+		cmd.Cmd.do_help (self, ' '.join (args [1:]))
+
+	@cmdparser.CmdMethodDecorator()
+	def do_version (self, *ignored):
+		"""version
+		   
+		   Print the name and current version of this shell.
+		"""
+		sys.stdout.write ('%s-%d.%d\n' % (self.prompt.split ('>') [0], self.version [0], self.version [1]))
+		return False
+
+	@cmdparser.CmdMethodDecorator()
+	def do_ping (self, *ignored):
+		"""ping
+		   
+		   Respond to ping requests (with output on stderr).
+		"""
+		sys.stderr.write ('EPROTONOSUPPORT: Please upgrade to ping6\n')
+		return False
+
+	@cmdparser.CmdMethodDecorator()
+	def do_ping6 (self, *ignored):
+		"""ping6
+		   
+		   Respond to ping6 requests (with output on stdout).
+		"""
+		sys.stdout.write ('pong6\n')
+		return False
+
+	@cmdparser.CmdMethodDecorator()
+	def do_date (self, *ignored):
+		"""date
+		   
+		   Request the current time on the system running the shell.
+		"""
+		sys.stdout.write ('%s\n' % time.asctime (time.gmtime ()))
+		return False
+
+	@cmdparser.CmdMethodDecorator()
+	def do_whoami (self, *ignored):
+		"""whoami
+		   
+		   Ask who you are, and how the shell sees you during ACL processing.
+		"""
+		if self.gss_name is None or self.gss_life is None:
+			sys.stderr.write ('You are nobody\n')
+			return False
+		try:
+			import gssapi
+		except ImportError as ie:
+			sys.stderr.write ('This shell does not support GSSAPI\n')
+			return False
+		try:
+			exp = time.asctime (time.gmtime (self.gss_life))
+			sys.stdout.write ('You are:    %s\nExpiration: %s\n' % (self.gss_name,exp))
+		except gssapi.raw.MissingCredentialsError:
+			sys.stderr.write ('You are nobody\n')
+		except gssapi.raw.ExpiredCredentialsError:
+			sys.stderr.write ('You have expired\n')
+		except gssapi.raw.InvalidCredentialsError:
+			sys.stderr.write ('Your credentials are wrong\n')
+		except gssapi.raw.GSSError as ge:
+			sys.stderr.write ('GSSAPI Error: %s\n' % str (ge))
+		except Exception as e:
+			sys.stderr.write ('General error: %s\n' % str (e))
+		return False
+
+	"""Termination commands.  No JSON wrappers, because this is
+	   not how a session under JSON should end.
 	"""
 	def do_EOF (self, *ignored):
 		"""Exit this shell.
@@ -87,3 +185,6 @@ class Cmd (cmd.Cmd):
 
 
 
+if __name__ == '__main__':
+	shell = Cmd ()
+	shell.cmdloop ()
