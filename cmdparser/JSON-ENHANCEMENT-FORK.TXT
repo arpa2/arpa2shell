@@ -1,0 +1,7 @@
+This module is a fork from cmdparser.cmdparser by Andy Pearce.
+We included it as a part of arpa2shell because maintenance of the
+original seems to have ceased, and we needed the JSON extension
+for the ARPA2 project.  The package retains its general nature,
+however, and may be of use to anyone as a JSON enhanced drop-in
+for the original cmdparser.cmdparser.  To use it, simply import
+arpa2shell.cmdparser instead of cmdparser.cmdparser.

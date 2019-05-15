@@ -1,0 +1,24 @@
+Addition to arpa2shell -- Fork due to unmaintained original
+-----------------------------------------------------------
+
+- Issue #13, https://github.com/Cartroo/ttrack/issues/13
+- Pull Request #14, https://github.com/Cartroo/ttrack/pull/14
+- Separate Extension, https://github.com/arpa2/arpa2shell-cmdparser/tree/json
+  https://github.com/arpa2/arpa2shell-cmdparser/blob/json/cmdparser/cmdparser/cmdparser.py
+- Taken up into initial https://github.com/arpa2/arpa2shell
+
+v1.0.1, 2013-01-14 -- Bug fix release.
+--------------------------------------
+
+- Fix #7: Update cmdparser version to 1.0.1
+- Fix #5: Accept bare days of week in DateSubtree
+- Added setup.cfg for Sphinx-PyPI-upload
+- Fix #3: Added Sphinx documentation support
+- Updated READMEs and changed website references
+
+
+v1.0.0, 2012-16-12 -- Initial release.
+--------------------------------------
+
+- Initial release on PyPI.
+
