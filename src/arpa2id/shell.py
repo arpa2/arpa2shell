@@ -24,7 +24,7 @@ import re
 import string
 
 import cmd
-import arpa2shell.cmd
+from arpa2shell import cmdshell
 
 import ldap
 from ldap import MOD_ADD, MOD_DELETE, MOD_REPLACE, MOD_INCREMENT
@@ -343,7 +343,7 @@ uuid_uid_domain_idhub = '53281a7c-2c69-3d49-b12f-590e0a2f54bc'
 
 
 
-class Cmd (arpa2shell.cmd.Cmd):
+class Cmd (cmdshell.Cmd):
 
 	version = (0,0)
 	prompt = 'arpa2id> '

@@ -117,3 +117,24 @@ our infrastructure.
 Read more:
 
   * [Tetralogy of a Free Internet](http://internetwide.org/blog/2016/06/24/iwo-phases.html)
+
+
+## Multiple Shells in one Setup
+
+Operators may install multiple shells on one machine, and
+to simplify that we support multiple shells in one Git repository.
+This is not required, other repositories can add their own shells
+under the `arpa2shell` name space.
+
+The `setup.py` builds and distributes multiple software
+packages at once.  You normally want to install the ones that
+make sense locally, so keep an eye on that.  We may split up
+the `setup.py` later if that makes sense.
+
+The currently supported shells are:
+
+  * The basic shell `arpa2shell`
+  * The basic client `arpa2client` for JSON / GSS-API / AMQP 1.0
+  * The basic server `arpa2server` for JSON / GSS-API / AMQP 1.0
+  * [arpa2dns](src/arpa2dns/README.MD) for DNS management
+  * [arpa2id](src/arpa2id/README.MD) for Identity management
