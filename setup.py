@@ -154,3 +154,51 @@ setuptools.setup (
 	install_requires = [ 'arpa2shell', 'python-ldap' ],
 
 )
+
+
+
+#
+# Additional setup -- for the arpa2reservoir shell
+#
+# BIG TODO: Not a cmdparser shell yet, so no integration with arpa2shell
+#
+readme_reservoir = open (path.join (here, 'src', 'arpa2reservoir', 'README.MD')).read (),
+setuptools.setup (
+
+	# What?
+	name = 'arpa2shell-reservoir',
+	version = '0.0.0',
+	url = 'https://github.com/arpa2/arpa2shell/src/arpa2reservoir',
+	description = 'The ARPA2 Shell for Reservoir data Management',
+	long_description = readme_reservoir,
+	long_description_content_type = 'text/markdown',
+
+	# Who?
+	author = 'Rick van Rein (for the ARPA2 Project)',
+	author_email = 'rick@openfortress.nl',
+
+	# Where?
+	namespace_packages = [ 'arpa2shell', ],
+	packages = [
+		'arpa2shell',
+		'arpa2shell.arpa2reservoir',
+	],
+	package_dir = {
+		'arpa2shell'                : path.join (here, 'src'),
+		'arpa2shell.arpa2reservoir' : path.join (here, 'src', 'arpa2reservoir'),
+	},
+
+	# How?
+	entry_points = {
+		'arpa2shell.cmdshell.subclasses' : [
+			'arpa2reservoir=arpa2shell.arpa2reservoir.shell:Cmd',
+		],
+		'console_scripts' : [
+			'arpa2reservoir=arpa2shell.arpa2reservoir.shell:main',
+		],
+	},
+
+	# Requirements
+	install_requires = [ 'arpa2shell', 'python-ldap', 'riak' ],
+
+)

@@ -15,9 +15,8 @@ import uuid
 import string
 import re
 
-import arpa2shell.cmd
+from arpa2shell import cmdshell, cmdparser
 import cmd
-from arpa2shell import cmdparser
 
 import ldap
 from ldap import MOD_ADD, MOD_DELETE, MOD_REPLACE, MOD_INCREMENT
