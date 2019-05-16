@@ -613,7 +613,9 @@ class Cmd (cmdshell.Cmd):
 		return False
 
 
-if __name__ == '__main__':
+def main ():
 	a2shell = Cmd ()
 	a2shell.cmdloop ()
 
+if __name__ == '__main__':
+	main ()

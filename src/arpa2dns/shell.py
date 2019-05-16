@@ -395,10 +395,10 @@ class Cmd (cmdshell.Cmd):
 
 
 
-try:
+def main ():
 	shell = Cmd ()
 	shell.cmdloop ()
 
-except Exception as e:
-	print 'EXCEPTION:', e
+if __name__ == '__main__':
+	main ()
 

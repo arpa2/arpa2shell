@@ -12,7 +12,7 @@ import sys
 import re
 import string
 
-import arpa2shell.cmd
+from arpa2shell import cmdshell
 
 
 try:
@@ -192,7 +192,7 @@ class ACL ():
 			raise
 
 
-class Cmd (arpa2shell.cmd.Cmd):
+class Cmd (cmdshell.Cmd):
 
 	version = (0,0)
 	prompt = "arpa2acl> "
@@ -277,5 +277,9 @@ class Cmd (arpa2shell.cmd.Cmd):
 			for dn in self.acl_dns
 			if dn.startswith (word) ]
 
-cmd = Cmd ()
-cmd.cmdloop ()
+def main ():
+	a2shell = Cmd ()
+	a2shell.cmdloop ()
+
+if __name__ == '__main__':
+	main ()

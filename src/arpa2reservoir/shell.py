@@ -588,7 +588,10 @@ class Cmd (arpa2shell.cmd.Cmd):
 			raise NotImplementedError ('Unexpected command ' + ' '.join (args))
 		return False
 
-if __name__ == '__main__':
+def main ():
 	shell = Cmd ()
 	shell.cmdloop ()
+
+if __name__ == '__main__':
+	main ()
 
