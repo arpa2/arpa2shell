@@ -12,7 +12,7 @@ import sys
 import re
 import string
 
-import arpa2cmd
+import arpa2shell.cmd
 
 
 try:
@@ -192,7 +192,7 @@ class ACL ():
 			raise
 
 
-class Cmd (arpa2cmd.Cmd):
+class Cmd (arpa2shell.cmd.Cmd):
 
 	version = (0,0)
 	prompt = "arpa2acl> "

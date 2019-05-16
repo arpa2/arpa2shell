@@ -220,9 +220,11 @@ cmdbatch = json.loads (sys.stdin.read ())
 
 # The main program creates on ARPA2ShellDaemon and runs it indefinately.
 #
-handler = ARPA2ShellClient ('amqp://localhost:5672', '/internetwide/arpa2.net/reservoir', cmdbatch)
-contain = Container (handler)
-contain.run ()
+def main ():
+	handler = ARPA2ShellClient ('amqp://localhost:5672', '/internetwide/arpa2.net/reservoir', cmdbatch)
+	contain = Container (handler)
+	contain.run ()
+	exit (1 if bad else 0)
 
-exit (1 if bad else 0)
-
+if __name__ == '__main__':
+	main ()

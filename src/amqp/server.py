@@ -28,7 +28,7 @@ import sys
 import time
 import re
 
-import arpa2cmd
+import arpa2shell.cmd
 
 import json
 import gssapi
@@ -131,7 +131,7 @@ class ARPA2ShellDaemon (MessagingHandler):
 
 
 	# Load the shell as a plugin module to this daemon.
-	# Shells must hold an arpa2cmd.Cmd instance named Cmd.
+	# Shells must hold an arpa2shell.cmd.Cmd instance named Cmd.
 	# The processes are retained for future re-use.
 	#
 	#TODO# We may want to be able to reset shells.
@@ -148,7 +148,7 @@ class ARPA2ShellDaemon (MessagingHandler):
 		if 'Cmd' not in dir (mod):
 			raise Exception ('Not a command shell: ' + modname)
 		cmd = mod.Cmd ()
-		if not isinstance (cmd, arpa2cmd.Cmd):
+		if not isinstance (cmd, arpa2shell.cmd.Cmd):
 			raise Exception ('Not an ARPA2 shell: ' + modname)
 		self.shell [modname] = cmd
 		return cmd
@@ -302,7 +302,10 @@ class ARPA2ShellDaemon (MessagingHandler):
 
 # The main program creates on ARPA2ShellDaemon and runs it indefinately.
 #
-handler = ARPA2ShellDaemon ('amqp://localhost:5672', '/internetwide/arpa2.net/reservoir')
-contain = Container (handler)
-contain.run ()
+def main ():
+	handler = ARPA2ShellDaemon ('amqp://localhost:5672', '/internetwide/arpa2.net/reservoir')
+	contain = Container (handler)
+	contain.run ()
 
+if __name__ == '__main__':
+	main ()

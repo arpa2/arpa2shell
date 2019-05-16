@@ -15,9 +15,9 @@ import uuid
 import string
 import re
 
-import arpa2cmd
+import arpa2shell.cmd
 import cmd
-from cmdparser import cmdparser
+from arpa2shell import cmdparser
 
 import ldap
 from ldap import MOD_ADD, MOD_DELETE, MOD_REPLACE, MOD_INCREMENT
@@ -409,14 +409,14 @@ def token_factory (token):
 # The shell for arpa2reservoir (based on cmdparser)
 #
 @cmdparser.CmdClassDecorator()
-class Cmd (arpa2cmd.Cmd):
+class Cmd (arpa2shell.cmd.Cmd):
 
 	version = (0,0)
 	prompt = "arpa2reservoir> "
 	intro = "Edit Reservoir: Resource Collections and Resources.\nAnd Resource Indexes per Domain and per Resource Collection."
 
 	def __init__ (self):
-		arpa2cmd.Cmd.__init__ (self)
+		arpa2shell.cmd.Cmd.__init__ (self)
 		self.cur_domain = None
 		self.cur_dn = None
 		#UNUSED# self.cur_colluuid = None

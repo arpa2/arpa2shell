@@ -6,32 +6,61 @@ from os import path
 # Preparation
 #
 here = path.dirname (path.realpath (__file__))
-srcdir = path.join (here, 'src')
 readme = open (path.join (here, 'README.MD')).read (),
 
 
 #
-# Packaging Instructions
+# Packaging Instructions -- arpa2shell.cmd, .cmdparser, .amqp
 #
 setuptools.setup (
 
-# What?
-name = 'arpa2shell',
-version = '0.0.0',
-url = 'https://github.com/arpa2/arpa2shell',
-description = 'The ARPA2 Shell Collection',
-long_description = readme,
-long_description_content_type = 'text/markdown',
+	# What?
+	name = 'arpa2shell',
+	version = '0.0.0',
+	url = 'https://github.com/arpa2/arpa2shell',
+	description = 'The ARPA2 Shell Collection',
+	long_description = readme,
+	long_description_content_type = 'text/markdown',
 
-# Who?
-author = 'Rick van Rein (for the ARPA2 Project)',
-author_email = 'rick@openfortress.nl',
+	# Who?
+	author = 'Rick van Rein (for the ARPA2 Project)',
+	author_email = 'rick@openfortress.nl',
 
-# Where?
-packages = [ 'arpa2shell', 'arpa2shell.cmdparser' ],
-package_dir = {
-	'arpa2shell'           : path.join (here, 'src'             ),
-	'arpa2shell.cmdparser' : path.join (here, 'src', 'cmdparser'),
-}
+	# Where?
+	namespace_packages = [ 'arpa2shell', ],
+	packages = [
+		'arpa2shell',
+		'arpa2shell.cmdshell',
+		'arpa2shell.cmdparser',
+		'arpa2shell.amqp',
+	],
+	package_dir = {
+		'arpa2shell'           : path.join (here, 'src'),
+		'arpa2shell.cmdshell'  : path.join (here, 'src', 'cmdshell'),
+		'arpa2shell.cmdparser' : path.join (here, 'src', 'cmdparser'),
+		'arpa2shell.amqp'      : path.join (here, 'src', 'amqp'),
+	},
+
+	# How?
+	entry_points = {
+		'arpa2shell.cmdshell.subclasses' : [
+			'arpa2shell=arpa2shell.cmdshell.meta:Cmd',
+		],
+		'console_scripts' : [
+			'arpa2shell=arpa2shell.cmdshell.meta:main',
+			'arpa2client=arpa2shell.amqp.client:main [JSON]',
+			'arpa2server=arpa2shell.amqp.server:main [JSON]',
+		],
+	},
+
+	# Requirements
+	install_requires = [ 'enum34', 'six', 'decorator' ],
+	#OK# install_requires = [ 'enum34', 'six', 'decorator', 'gssapi' ],
+	#MAYBE#  :- 'JSON' extra adds layers JSON / GSS-API / AMQP 1.0
+	extras_require = {
+		'JSON' : [ 'gssapi', 'python-qpid-proton' ],
+	},
 
 )
+
+

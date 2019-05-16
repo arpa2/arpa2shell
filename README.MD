@@ -58,7 +58,7 @@ Read more:
 
   * [Backbone Innovations](http://internetwide.org/blog/2018/11/22/backbone-innovations.html)
   * [Protocol for ARPA2 Messaging over AMQP](PROTOCOL.MD)
-  * [Using GSSAPI with AMQP](GSSAPI.MD)
+  * [Using GSS-API with AMQP](GSS-API.MD)
 
 
 ## Generic Modules

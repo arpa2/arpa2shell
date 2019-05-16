@@ -1,5 +1,6 @@
-# arpa2cmd is a base class for ARPA2 command interpreters.
-# It shows itself as arpa2shell, from which it usually runs.
+# arpa2shell.cmdshell.Cmd is a base class for ARPA2 command interpreters.
+# It is exported as arpa2shell.Cmd, from which subclasses usually
+# inherit.
 #
 # These interpreters can be told to know_about each other
 # and call each other when combined with the meta-shell of
@@ -8,18 +9,20 @@
 # From: Rick van Rein <rick@openfortress.nl>
 
 
+from __future__ import absolute_import
+
 import sys
 import time
 
-import cmd
-from cmdparser import cmdparser
+import cmd as old_cmd
+from arpa2shell import cmdparser
 
 import types
 
 
 
 @cmdparser.CmdClassDecorator()
-class Cmd (cmd.Cmd):
+class Cmd (old_cmd.Cmd):
 
 	version = (0,0)
 	prompt = 'arpa2shell> '
@@ -39,7 +42,7 @@ class Cmd (cmd.Cmd):
 	   above it.
 	"""
 	def __init__ (self, *args, **kwargs):
-		cmd.Cmd.__init__ (self, *args, **kwargs)
+		old_cmd.Cmd.__init__ (self, *args, **kwargs)
 		self.known = [ ]
 		self.next_shell = None
 		self.reset ()
@@ -63,7 +66,7 @@ class Cmd (cmd.Cmd):
 		   the cmdparser wrapper so it can be called over JSON.
 		   There is a shorthand notation, namely a question mark.
 		"""
-		cmd.Cmd.do_help (self, ' '.join (args [1:]))
+		old_cmd.Cmd.do_help (self, ' '.join (args [1:]))
 
 	@cmdparser.CmdMethodDecorator()
 	def do_version (self, *ignored):
@@ -183,8 +186,16 @@ class Cmd (cmd.Cmd):
 		bound_switch = self.bound_shell (shellname, shellobj)
 		self.__class__.__dict__ ['do_' + shellname] = bound_switch
 
+	"""The main function to run this class.  It makes
+	   an instance and runs the cmdloop() on it.  This is
+	   a class method, and it can be used as en entry_point
+	   with setuptools.
+	"""
+	@classmethod
+	def main (cls):
+		cls ().cmdloop ()
 
 
-if __name__ == '__main__':
-	shell = Cmd ()
-	shell.cmdloop ()
+#BASECLASS# if __name__ == '__main__':
+#BASECLASS# 	shell = Cmd ()
+#BASECLASS# 	shell.cmdloop ()
