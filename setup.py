@@ -7,6 +7,7 @@ from os import path
 #
 here = path.dirname (path.realpath (__file__))
 readme = open (path.join (here, 'README.MD')).read (),
+readme_dns = open (path.join (here, 'src', 'arpa2dns', 'README.MD')).read (),
 
 
 #
@@ -55,8 +56,6 @@ setuptools.setup (
 
 	# Requirements
 	install_requires = [ 'enum34', 'six', 'decorator' ],
-	#OK# install_requires = [ 'enum34', 'six', 'decorator', 'gssapi' ],
-	#MAYBE#  :- 'JSON' extra adds layers JSON / GSS-API / AMQP 1.0
 	extras_require = {
 		'JSON' : [ 'gssapi', 'python-qpid-proton' ],
 	},
@@ -64,3 +63,47 @@ setuptools.setup (
 )
 
 
+
+#
+# Second setup -- for the arpa2dns shell
+#
+setuptools.setup (
+
+	# What?
+	name = 'arpa2shell-dns',
+	version = '0.0.0',
+	url = 'https://github.com/arpa2/arpa2shell/src/arpa2dns',
+	description = 'The ARPA2 Shell for DNS',
+	long_description = readme_dns,
+	long_description_content_type = 'text/markdown',
+
+	# Who?
+	author = 'Rick van Rein (for the ARPA2 Project)',
+	author_email = 'rick@openfortress.nl',
+
+	# Where?
+	namespace_packages = [ 'arpa2shell', ],
+	packages = [
+		'arpa2shell',
+		'arpa2shell.arpa2dns',
+	],
+	package_dir = {
+		'arpa2shell'           : path.join (here, 'src'),
+		'arpa2shell.arpa2dns'  : path.join (here, 'src', 'arpa2dns'),
+	},
+
+	# How?
+	entry_points = {
+		'arpa2shell.cmdshell.subclasses' : [
+			'arpa2dns=arpa2shell.arpa2dns.shell:Cmd',
+		],
+		'console_scripts' : [
+			'arpa2dns=arpa2shell.arpa2dns.shell:main',
+		],
+	},
+
+	# Requirements
+	install_requires = [ 'enum34', 'six', 'decorator',
+			'libknot' ],
+
+)

@@ -11,8 +11,7 @@ import uuid
 import string
 import re
 
-import arpa2shell.cmd
-import cmd
+from arpa2shell import cmdshell
 from arpa2shell import cmdparser
 
 import tightknot
@@ -172,7 +171,7 @@ def token_factory (token):
 
 
 
-class Cmd (arpa2shell.cmd.Cmd):
+class Cmd (cmdshell.Cmd):
 
 	version = (0,0)
 	prompt = 'arpa2dns> '
@@ -180,7 +179,7 @@ class Cmd (arpa2shell.cmd.Cmd):
 
 
 	def __init__ (self):
-		arpa2shell.cmd.Cmd.__init__ (self)
+		cmdshell.Cmd.__init__ (self)
 		self.knot = tightknot.TightKnot ()
 		self.tlsa_config = (0,0,0)
 
