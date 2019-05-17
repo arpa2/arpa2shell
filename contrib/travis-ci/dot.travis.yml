@@ -8,23 +8,19 @@ matrix:
     - sudo: required
       services:
         - docker
-      env: DOCKER_IMAGE=quay.io/pypa/manylinux1_x86_64
-           PLAT=manylinux1_x86_64
+      env: DOCKER_IMAGE=arpa2/build-pip
+           PYTHON=python
+           PIP=pip
     - sudo: required
       services:
         - docker
-      env: DOCKER_IMAGE=quay.io/pypa/manylinux1_i686
-           PRE_CMD=linux32
-           PLAT=manylinux1_i686
-    - sudo: required
-      services:
-        - docker
-      env: DOCKER_IMAGE=quay.io/pypa/manylinux2010_x86_64
-           PLAT=manylinux2010_x86_64
+      env: DOCKER_IMAGE=arpa2/build-pip3
+           PYTHON=python3
+           PIP=pip3
 
 install:
   - docker pull $DOCKER_IMAGE
 
+# Last statement is the ONLY ONE whose output matters
 script:
-  - docker run --rm -e PLAT=$PLAT -v `pwd`:/io $DOCKER_IMAGE $PRE_CMD /io/contrib/travis-ci/build-wheels.sh
-  - ls -l wheelhouse/arpa2shell*
+  - docker run --rm -e PLAT=$PLAT -e PYTHON=$PYTHON -e PIP=$PIP -v `pwd`:/io $DOCKER_IMAGE /io/contrib/travis-ci/build-distro.sh
