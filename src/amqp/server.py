@@ -221,7 +221,7 @@ class ARPA2ShellDaemon (MessagingHandler):
 			if life > 0:
 				try:
 					self.run_command (shell, jout, name, life)
-				except Exception e:
+				except Exception as e:
 					jout ['stderr_'] = 'Exception: ' + str (e)
 			else:
 				jout ['stderr_'] = 'Access denied: Credentials expired'

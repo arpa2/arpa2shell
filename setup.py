@@ -72,7 +72,7 @@ setuptools.setup (
 	# What?
 	name = 'arpa2shell-dns',
 	version = '0.0.3',
-	url = 'https://github.com/arpa2/arpa2shell/src/arpa2dns',
+	url = 'https://github.com/arpa2/arpa2shell/tree/master/src/arpa2dns',
 	description = 'The ARPA2 Shell for DNS',
 	long_description = readme_dns,
 	long_description_content_type = 'text/markdown',
@@ -120,7 +120,7 @@ setuptools.setup (
 	# What?
 	name = 'arpa2shell-id',
 	version = '0.0.3',
-	url = 'https://github.com/arpa2/arpa2shell/src/arpa2id',
+	url = 'https://github.com/arpa2/arpa2shell/tree/master/src/arpa2id',
 	description = 'The ARPA2 Shell for Identity Management',
 	long_description = readme_id,
 	long_description_content_type = 'text/markdown',
@@ -168,7 +168,7 @@ setuptools.setup (
 	# What?
 	name = 'arpa2shell-reservoir',
 	version = '0.0.3',
-	url = 'https://github.com/arpa2/arpa2shell/src/arpa2reservoir',
+	url = 'https://github.com/arpa2/arpa2shell/tree/master/src/arpa2reservoir',
 	description = 'The ARPA2 Shell for Reservoir data Management',
 	long_description = readme_reservoir,
 	long_description_content_type = 'text/markdown',
@@ -214,7 +214,7 @@ setuptools.setup (
 	# What?
 	name = 'arpa2shell-acl',
 	version = '0.0.3',
-	url = 'https://github.com/arpa2/arpa2shell/src/arpa2acl',
+	url = 'https://github.com/arpa2/arpa2shell/tree/master/src/arpa2acl',
 	description = 'The ARPA2 Shell for ACL Management',
 	long_description = readme_acl,
 	long_description_content_type = 'text/markdown',
