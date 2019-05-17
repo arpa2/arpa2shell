@@ -114,10 +114,10 @@ class TightKnot:
 			# Already failed; discontinue
 			return None
 		try:
-			print 'KnotControl send', block
+			print ('KnotControl send', block)
 			self.ctl.send_block (**block)
 			resp = self.ctl.receive_block ()
-			print 'KnotControl recv', resp
+			print ('KnotControl recv', resp)
 		except libknot.control.KnotCtlError as lck:
 			self.txn_success = False
 			sys.stderr.write ('KnotControl exception: %s\n' % (str (lck),))
@@ -286,7 +286,7 @@ class TightKnot:
 			return 0
 		old_success = self.txn_success
 		oldrdata = self.knot (cmd='zone-get', zone=zone, owner=owner, rtype=rtype)
-		print 'DEBUG: oldrdata = %r' % (oldrdata,)
+		print ('DEBUG: oldrdata = %r' % (oldrdata,))
 		try:
 			if oldrdata in [None,{}]:
 				self.txn_success = old_success
@@ -308,9 +308,9 @@ class TightKnot:
 		self.patience (zone, owner, rtype)
 		self._rr ('zone-set', zone, owner, ttl, rtype, rdata)
 		if done_after is not None:
-			print 'Cache-Update-Delay:', done_after
+			print ('Cache-Update-Delay:', done_after)
 		else:
-			print 'DEBUG: No done_after available'
+			print ('DEBUG: No done_after available')
 
 	def del_rr (self, zone, owner, ttl, rtype, rdata):
 		"""Delete the given resource record.
@@ -318,9 +318,9 @@ class TightKnot:
 		done_after = self.patience (zone, owner, rtype)
 		self._rr ('zone-unset', zone, owner, ttl, rtype, rdata)
 		if done_after is not None:
-			print 'Cache-Update-Delay:', done_after
+			print ('Cache-Update-Delay:', done_after)
 		else:
-			print 'DEBUG: No done_after available'
+			print ('DEBUG: No done_after available')
 
 	def list_rr (self, zone, owner, rtype):
 		"""List the given resource record's rdata.
@@ -414,7 +414,7 @@ if False:
 		knot.try_commit ()
 
 	except Exception as e:
-		print 'EXCEPTION:', e
+		print ('EXCEPTION:', e)
 
 	finally:
 		if knot is not None:
