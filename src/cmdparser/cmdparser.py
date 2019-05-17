@@ -185,8 +185,8 @@ A simple example of these decorators is shown below::
            Displays the specified message a total of <num> times.
            \"\"\"
 
-           for i in xrange(fields["<num>"][0]):
-               print " ".join(fields["<msg...>"])
+           for i in range(fields["<num>"][0]):
+               print (" ".join(fields["<msg...>"]))
 
 
    if __name__ == "__main__":
@@ -434,7 +434,7 @@ class ParseItem(object):
                 return "command invalid somewhere in: %r" % (suffix,)
             else:
                 return None
-        except MatchError, e:
+        except MatchError as e:
             return str(e)
 
 
@@ -604,7 +604,7 @@ class Repeater(ParseItem):
                                             trace=trace, context=context)
                 compare_items = new_items
                 repeats += 1
-            except MatchError, e:
+            except MatchError as e:
                 if repeats == 0:
                     tracer.fail(e.args[0])
                     raise
@@ -804,7 +804,7 @@ class Alternation(ParseItem):
                 return option.match(compare_items, fields=fields,
                                     completions=completions,
                                     trace=trace, context=context)
-            except MatchError, e:
+            except MatchError as e:
                 errors.add(str(e))
         if self.optional:
             return compare_items
@@ -865,10 +865,10 @@ class Token(ParseItem):
 
     def __str__(self):
         # Slightly clumsy, but alter the return value depending on whether a
-        # derived class has overridden get_values(). This is partly to make
+        # derived class has overridden __str__(). This is partly to make
         # life easier for clients of the library, and partly because some
         # people may simply forget to override __str__().
-        if self.get_values.im_func == Token.get_values.im_func:
+        if self.__class__ != Token:
             return self.token
         else:
             # Add angle-brackets for derived classes, on the assumption that
@@ -1242,7 +1242,7 @@ def parse_spec(spec, ident_factory=None):
     ident = False
     skip_chars = 0
 
-    for num, chars in ((i+1, spec[i:]) for i in xrange(len(spec))):
+    for num, chars in ((i+1, spec[i:]) for i in range(len(spec))):
 
         if skip_chars:
             skip_chars -= 1
@@ -1432,10 +1432,10 @@ class CmdMethodDecorator(object):
     def __call__(self, method):
 
         # Work out command name.
-        if not method.func_name.startswith("do_"):
+        if not method.__name__.startswith("do_"):
             raise ParseError("method name %r doesn't start 'do_'"
-                             % (method.func_name,))
-        self.command_string = method.func_name[3:]
+                             % (method.__name__,))
+        self.command_string = method.__name__[3:]
 
         # Parse method doc string to obtain parse tree and reformatted
         # docstring.
@@ -1464,8 +1464,8 @@ class CmdMethodDecorator(object):
             if check is None:
                 return method(cmd_self, split_args, fields)
             else:
-                print "Error: %s" % (check,)
-                print "Expected syntax: %s" % (self.parse_tree,)
+                print ("Error: %s" % (check,))
+                print ("Expected syntax: %s" % (self.parse_tree,))
 
         # Ensure wrapper has correct docstring, and also store away the parse
         # tree for the class wrapper to use for building completer methods.
@@ -1528,7 +1528,7 @@ class CmdMethodDecorator(object):
             if token != self.command_string:
                 raise ParseError("%s: command spec initial token %r must match"
                                  " command" % (self.command_string, token))
-        except ParseError, e:
+        except ParseError as e:
             raise ParseError("%s: %s" % (self.command_string, e))
 
         # Store parse tree.
