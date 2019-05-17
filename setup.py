@@ -54,7 +54,7 @@ setuptools.setup (
 	},
 
 	# Requirements
-	install_requires = [ 'enum34', 'six' ],
+	install_requires = [ 'enum34 ; python_version < "3"', 'six' ],
 	extras_require = {
 		'JSON' : [ 'gssapi', 'python-qpid-proton' ],
 	},
