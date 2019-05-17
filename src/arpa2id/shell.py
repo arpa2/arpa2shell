@@ -48,7 +48,7 @@ try:
 except:
         pass
 
-if ldapcfg.has_key ('URI'):
+if 'URI' in ldapcfg:
 	ldapuri = ldapcfg ['URI']
 else:
 	ldapuri = os.environ.get ('ARPA2_LDAPURI', None)
@@ -56,7 +56,7 @@ if ldapuri is None:
 	sys.stderr.write ('Please set URI in /etc/ldap/ldap.conf or configure ARPA2_LDAPURI\n')
 	sys.exit (1)
 
-if ldapcfg.has_key ('BINDDN'):
+if 'BINDDN' in ldapcfg:
 	ldapuser = ldapcfg ['BINDDN']
 	ldappasw = os.environ.get ('ARPA2_BINDPW')
 
@@ -83,7 +83,7 @@ else:
 whoami = dap.whoami_s ()
 if whoami [:3] == 'dn:':
 	whoami = whoami [3:]
-#DEBUG# print 'I seem to be', whoami, '::', type (whoami)
+#DEBUG# print ('I seem to be', whoami, '::', type (whoami))
 
 whoami_uid = None
 whoami_dom = None

@@ -155,7 +155,7 @@ def enum_service_field (service_field):
 		svc_type_subs = svc_sub.split (':')
 		svc_type = svc_type_subs [0]
 		svc_subs = svc_type_subs [1:]
-		if retval.has_key (svc_type):
+		if svc_type in retval:
 			return None
 		retval [svc_type] = svc_subs
 	return retval
@@ -196,7 +196,7 @@ class Cmd (cmdshell.Cmd):
 		"""
 		subcmd = args [1]
 		zone = map_enum (args [2])
-		print 'Got: zone', subcmd, zone
+		print ('Got: zone', subcmd, zone)
 		self.knot.have_conf ()
 		zone_cmd = 'zone-set' if subcmd == 'add' else 'zone-unset'
 		self.knot.have_conf ()
@@ -316,8 +316,8 @@ class Cmd (cmdshell.Cmd):
 		part following after the number.
 		"""
 
-		print 'args =', args
-		print 'fields =', fields
+		print ('args =', args)
+		print ('fields =', fields)
 		subcmd = args [1]
 		zone = map_enum (args [2])
 		self.knot.have_zones (zone)
@@ -325,7 +325,7 @@ class Cmd (cmdshell.Cmd):
 		if digits is None:
 			sys.stderr.write ('Please provide an ENUM zone or the +ddddd form\n')
 			return False
-		wildcard = fields.has_key ('wildcard')
+		wildcard = 'wildcard' in fields
 		try:
 			skip = int (fields ['<skip>'][0])
 		except:
@@ -385,9 +385,9 @@ class Cmd (cmdshell.Cmd):
 		if not self.knot.try_commit ():
 			sys.stderr.write ('Failed to %s %s in zone %s' % (subcmd,rtype,zone))
 		#OLD#BAD# if done_after is not None:
-		#OLD#BAD# 	print 'Cache-Update-Delay:', done_after
+		#OLD#BAD# 	print ('Cache-Update-Delay:', done_after)
 		#OLD#BAD# else:
-		#OLD#BAD# 	print 'DEBUG: No done_after available'
+		#OLD#BAD# 	print ('DEBUG: No done_after available')
 		return False
 
 

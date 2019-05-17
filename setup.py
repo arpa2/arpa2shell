@@ -16,7 +16,7 @@ setuptools.setup (
 
 	# What?
 	name = 'arpa2shell',
-	version = '0.0.0',
+	version = '0.0.3',
 	url = 'https://github.com/arpa2/arpa2shell',
 	description = 'The ARPA2 Shell Collection',
 	long_description = readme,
@@ -54,7 +54,7 @@ setuptools.setup (
 	},
 
 	# Requirements
-	install_requires = [ 'enum34', 'six', 'decorator' ],
+	install_requires = [ 'enum34', 'six' ],
 	extras_require = {
 		'JSON' : [ 'gssapi', 'python-qpid-proton' ],
 	},
@@ -62,21 +62,16 @@ setuptools.setup (
 )
 
 
-#TODO# For now, just build the main shell
-#TODO# Travis CI builds through "pip whell" which breaks otherwise
-import sys
-sys.exit (0)
-
 
 #
 # Additional setup -- for the arpa2dns shell
 #
-readme_dns = open (path.join (here, 'src', 'arpa2dns', 'README.MD')).read (),
+readme_dns = open (path.join (here, 'src', 'arpa2dns', 'README.MD')).read ()
 setuptools.setup (
 
 	# What?
 	name = 'arpa2shell-dns',
-	version = '0.0.0',
+	version = '0.0.3',
 	url = 'https://github.com/arpa2/arpa2shell/src/arpa2dns',
 	description = 'The ARPA2 Shell for DNS',
 	long_description = readme_dns,
@@ -119,12 +114,12 @@ setuptools.setup (
 #
 # BIG TODO: Not a cmdparser shell yet, so no integration with arpa2shell
 #
-readme_id = open (path.join (here, 'src', 'arpa2id', 'README.MD')).read (),
+readme_id = open (path.join (here, 'src', 'arpa2id', 'README.MD')).read ()
 setuptools.setup (
 
 	# What?
 	name = 'arpa2shell-id',
-	version = '0.0.0',
+	version = '0.0.3',
 	url = 'https://github.com/arpa2/arpa2shell/src/arpa2id',
 	description = 'The ARPA2 Shell for Identity Management',
 	long_description = readme_id,
@@ -167,12 +162,12 @@ setuptools.setup (
 #
 # BIG TODO: Not a cmdparser shell yet, so no integration with arpa2shell
 #
-readme_reservoir = open (path.join (here, 'src', 'arpa2reservoir', 'README.MD')).read (),
+readme_reservoir = open (path.join (here, 'src', 'arpa2reservoir', 'README.MD')).read ()
 setuptools.setup (
 
 	# What?
 	name = 'arpa2shell-reservoir',
-	version = '0.0.0',
+	version = '0.0.3',
 	url = 'https://github.com/arpa2/arpa2shell/src/arpa2reservoir',
 	description = 'The ARPA2 Shell for Reservoir data Management',
 	long_description = readme_reservoir,
@@ -213,12 +208,12 @@ setuptools.setup (
 #
 # Additional setup -- for the arpa2acl shell
 #
-readme_acl = open (path.join (here, 'src', 'arpa2acl', 'README.MD')).read (),
+readme_acl = open (path.join (here, 'src', 'arpa2acl', 'README.MD')).read ()
 setuptools.setup (
 
 	# What?
 	name = 'arpa2shell-acl',
-	version = '0.0.0',
+	version = '0.0.3',
 	url = 'https://github.com/arpa2/arpa2shell/src/arpa2acl',
 	description = 'The ARPA2 Shell for ACL Management',
 	long_description = readme_acl,

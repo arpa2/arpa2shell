@@ -64,7 +64,7 @@ except:
 dn_2_coll_dom = re.compile ('^resins=([^,]+),associatedDomain=([^,]+),' + base + '$')
 dn_2_res_coll_dom = re.compile ('^resource=([^,]+),resins=([^,]+),associatedDomain=([^,]+),' + base + '$')
 
-if ldapcfg.has_key ('URI'):
+if 'URI' in ldapcfg:
 	ldapuri = ldapcfg ['URI']
 else:
 	ldapuri = os.environ.get ('ARPA2_LDAPURI', None)
@@ -72,7 +72,7 @@ if ldapuri is None:
 	sys.stderr.write ('Please set URI in /etc/ldap/ldap.conf or configure ARPA2_LDAPURI\n')
 	sys.exit (1)
 
-if ldapcfg.has_key ('BINDDN'):
+if 'BINDDN' in ldapcfg:
 	ldapuser = ldapcfg ['BINDDN']
 	ldappasw = os.environ.get ('ARPA2_BINDPW')
 
@@ -100,7 +100,7 @@ else:
 whoami = dap.whoami_s ()
 if whoami [:3] == 'dn:':
 	whoami = whoami [3:]
-#DEBUG# print 'I seem to be', whoami, '::', type (whoami)
+#DEBUG# print ('I seem to be', whoami, '::', type (whoami))
 
 whoami_uid = None
 whoami_dom = None
@@ -138,7 +138,7 @@ def cmd_domain_add (domain, orgname=None):
 	try:
 		meta = dap.add_s (dn1,at1)
 	except ALREADY_EXISTS:
-		print 'Domain already exists.'
+		print ('Domain already exists.')
 		return
 	#TODO# bucket-type management is the admin's prerogative, so here???
 	os.system ("riak-admin bucket-type create '" + domain + "' '{\"props\":{}}'")
@@ -150,10 +150,10 @@ def cmd_domain_del (*domains):
 	for domain in domains:
 		dn1 = 'associatedDomain=' + domain + ',' + base
 		try:
-			#DEBUG# print 'deleting', dn1
+			#DEBUG# print ('deleting', dn1)
 			dap.delete_s (dn1)
 		except NOT_ALLOWED_ON_NONLEAF:
-			print 'Remove other stuff first'
+			print ('Remove other stuff first')
 		except NO_SUCH_OBJECT:
 			sys.stderr.write ('No such domain\n')
 
@@ -164,9 +164,9 @@ def fetch_domain_list ():
 		dn1 = base
 		fl1 = '(objectClass=domainRelatedObject)'
 		al1 = ['associatedDomain']
-		#DEBUG# print 'searching', dn1, fl1, al1
+		#DEBUG# print ('searching', dn1, fl1, al1)
 		qr1 = dap.search_s (dn1, SCOPE_ONELEVEL, filterstr=fl1, attrlist=al1)
-		#DEBUG# print 'Query response:', qr1
+		#DEBUG# print ('Query response:', qr1)
 		# Note that we always set a single associatedDomain
 		# but domainRelatedObject does not set it as SINGLE-VALUE
 		return [ at.get ('associatedDomain', ['undefined']) [0] for (dn,at) in qr1 ]
@@ -175,7 +175,7 @@ def fetch_domain_list ():
 
 def cmd_domain_list ():
 	for domain in fetch_domain_list ():
-		print 'Domain:', domain
+		print ('Domain:', domain)
 
 
 # Add a new Resource Collection.
@@ -191,10 +191,10 @@ def cmd_collection_add (domain, collname):
 		('resins', colluuid),
 		('cn', collname),
 	]
-	print 'adding', dn1
+	print ('adding', dn1)
 	dap.add_s (dn1, at1)
 	#IMPLICIT NO DELETE???# rkv.bucket (colluuid, bucket_type=domain)
-	print 'Collection:', colluuid
+	print ('Collection:', colluuid)
 	return colluuid
 
 # Delete a Resource Collection.
@@ -204,7 +204,7 @@ def cmd_collection_del (domain, *colluuids):
 	for colluuid in colluuids:
 		#IMPLICIT DEL???# rkv.bucket (colluuid, bucket_type=domain)
 		dn1 = 'resins=' + colluuid + ',associatedDomain=' + domain + ',' + base
-		#DEBUG# print 'deleting', dn1
+		#DEBUG# print ('deleting', dn1)
 		dap.delete_s (dn1)
 
 # List the Resource Collections under a domain.
@@ -214,9 +214,9 @@ def fetch_collection_list (domain):
 		dn1 = 'associatedDomain=' + domain + ',' + base
 		fl1 = '(&(objectClass=reservoirCollection)(rescls=' + reservoir_uuid + '))'
 		al1 = ['resins']
-		#DEBUG# print 'searching', dn1, fl1, al1
+		#DEBUG# print ('searching', dn1, fl1, al1)
 		qr1 = dap.search_s (dn1, SCOPE_ONELEVEL, filterstr=fl1, attrlist=al1)
-		#DEBUG# print 'Query response:', qr1
+		#DEBUG# print ('Query response:', qr1)
 		# Note that we always set a single resins
 		# but domainRelatedObject does not set it as SINGLE-VALUE
 		return [ at.get ('resins', ['(undefined)']) [0] for (dn,at) in qr1 ]
@@ -229,9 +229,9 @@ def cmd_collection_list (domain=None):
 	else:
 		domains = [domain]
 	for domain in domains:
-		print 'Domain:', domain
+		print ('Domain:', domain)
 		for colluuid in fetch_collection_list (domain):
-			print 'Collection:', colluuid
+			print ('Collection:', colluuid)
 
 def cmd_index_add_by_dn (dn1, refname, refcolluuid):
 	at1 = [ (MOD_ADD, 'reservoirRef', refcolluuid + ' ' + refname) ]
@@ -251,9 +251,9 @@ def cmd_index_del (domain, colluuid, refname, refcolluuid):
 
 def fetch_index_list (dn1):
 	rv1 = { }
-	#DEBUG# print 'searching', dn1
+	#DEBUG# print ('searching', dn1)
 	qr1 = dap.search_s (dn1, SCOPE_BASE, attrlist=['reservoirRef'])
-	#DEBUG# print 'Query result:', qr1
+	#DEBUG# print ('Query result:', qr1)
 	for (dn,at) in qr1:
 		for rr in at.get ('reservoirRef', []):
 			try:
@@ -268,11 +268,11 @@ def fetch_index_colluid_by_dn_name (dn1, name):
 	return idx [name]
 
 def cmd_index_list (domain, colluuid):
-	print 'Domain:', domain
-	print 'Collection:', colluuid
+	print ('Domain:', domain)
+	print ('Collection:', colluuid)
 	dn1 = 'resins=' + colluuid + ',associatedDomain=' + domain + ',' + base
 	for (refname,uuid) in fetch_index_list (dn1).items ():
-		print 'Reference:', uuid, refname or ''
+		print ('Reference:', uuid, refname or '')
 
 # Add an object to the given Resource Collection.
 # This sets up a descriptive object in LDAP and loads the object into Riak KV.
@@ -291,12 +291,12 @@ def cmd_resource_add (domain, colluuid, mediatype, objname, blob):
 	obj = riak.RiakObject (rkv, bkt, objkey)
 	obj.content_type = mediatype
 	obj.data = blob
-	print 'Content-Type:', obj.content_type
-	print 'Data:', obj.data
+	print ('Content-Type:', obj.content_type)
+	print ('Data:', obj.data)
 	obj.store ()
-	#DEBUG# print 'adding', dn1
+	#DEBUG# print ('adding', dn1)
 	dap.add_s (dn1, at1)
-	print 'Resource:', objkey
+	print ('Resource:', objkey)
 	return objkey
 
 # Remove an object.
@@ -307,22 +307,22 @@ def cmd_resource_del (domain, colluuid, *objkeys):
 		dn1 = 'resource=' + objkey + ',resins=' + colluuid + ',associatedDomain=' + domain + ',' + base
 		bkt = rkv.bucket_type (domain).bucket (colluuid)
 		bkt.delete (objkey)
-		#DEBUG# print 'searching', dn1
+		#DEBUG# print ('searching', dn1)
 		dap.search_s (dn1, SCOPE_BASE)
-		#DEBUG# print 'deleting', dn1
+		#DEBUG# print ('deleting', dn1)
 		try:
 			dap.delete_s (dn1)
 		except NOT_ALLOWED_ON_NONLEAF:
-			print 'Remove other stuff first'
+			print ('Remove other stuff first')
 
 # List the objects in a Resource Collection.
 #
 def fetch_resource_list_by_dn (dn1):
 	fl1 = '(objectClass=document)'
 	al1 = ['resource']
-	#DEBUG# print 'searching', dn1, fl1, al1
+	#DEBUG# print ('searching', dn1, fl1, al1)
 	qr1 = dap.search_s (dn1, SCOPE_ONELEVEL, filterstr=fl1, attrlist=al1)
-	#DEBUG# print 'Query response:', qr1
+	#DEBUG# print ('Query response:', qr1)
 	# Treat the resource as SINGLE-VALUE
 	# as this is how we use it
 	return [ at.get ('resource', ['(undefined)']) [0] for (dn,at) in qr1 ]
@@ -335,15 +335,15 @@ def cmd_resource_list (domain=None, colluuid=None):
 	else:
 		domains = [domain]
 	for domain in domains:
-		print 'Domain:', domain
+		print ('Domain:', domain)
 		if colluuid is None:
 			colluuids = fetch_collection_list (domain)
 		else:
 			colluuids = [colluuid]
 		for colluuid in colluuids:
-			print 'Collection:', colluuid
+			print ('Collection:', colluuid)
 			for objkey in fetch_resource_list (domain, colluuid):
-				print 'Resource:', objkey
+				print ('Resource:', objkey)
 
 # Get an object.
 # This finds the object in LDAP and subsequently downloads in from Riak KV.
@@ -353,16 +353,16 @@ def cmd_resource_get (domain, colluuid, objkey):
 	dn1 = 'resource=' + objkey + ',resins=' + colluuid + ',associatedDomain=' + domain + ',' + base
 	bkt = rkv.bucket_type (domain).bucket (colluuid)
 	obj = bkt.get (objkey)
-	print 'Content-Type:', obj.content_type
-	print 'Data:', obj.data
+	print ('Content-Type:', obj.content_type)
+	print ('Data:', obj.data)
 
 
 
 class ListOfDomains (cmdparser.Token):
 	def get_values (self, *context):
-		#DEBUG# print 'Fetching domain list under context', context, '::', type (context)
+		#DEBUG# print ('Fetching domain list under context', context, '::', type (context))
 		retval = fetch_domain_list ()
-		#DEBUG# print 'Returning domain list', retval
+		#DEBUG# print ('Returning domain list', retval)
 		return retval
 	def __str__ (self):
 		return 'domain'
@@ -372,7 +372,7 @@ class ListOfDomains (cmdparser.Token):
 # Produce lists of new values (or indicate anything is accepted)
 #
 def token_factory (token):
-	#DEBUG# print 'token_factory ("' + token + '")'
+	#DEBUG# print ('token_factory ("' + token + '")')
 	if token [:3] == 'new':
 		# Accept any token (as a newxxx value)
 		return cmdparser.AnyToken (token)
@@ -380,7 +380,7 @@ def token_factory (token):
 		# Find a list of domains
 		#TODO# return ListOfDomains ()
 		retval = ListOfDomains ('domain')
-		#DEBUG# print retval, '::', type (retval)
+		#DEBUG# print (retval, '::', type (retval))
 		return retval
 	elif token == 'colluuid':
 		# Find a list of collection UUIDs, possibly crossing over to another domain
@@ -436,12 +436,12 @@ class Cmd (arpa2shell.cmd.Cmd):
 
 		if args [1] == 'list':
 			for domain in fetch_domain_list ():
-				print domain
+				print (domain)
 		elif args [1] == 'add':
 			cmd_domain_add (args [2])
 			self.cur_domain = args [2]
 		elif args [1] == 'del':
-			print 'Invoking domain deletion on', args [2:]
+			print ('Invoking domain deletion on', args [2:])
 			cmd_domain_del (*args [2:])
 			if args [2] == self.cur_domain:
 				self.cur_domain = None
@@ -466,24 +466,24 @@ class Cmd (arpa2shell.cmd.Cmd):
 
 		if args [1] == 'dn':
 			if self.cur_dn is not None:
-				print self.cur_dn
+				print (self.cur_dn)
 			else:
-				print '**undefined**'
+				print ('**undefined**')
 		elif args [1] == 'list':
 			if self.cur_dn is None:
-				print 'First use: index domain <domain> | collection <colluuid>'
+				print ('First use: index domain <domain> | collection <colluuid>')
 				return False
 			idx = fetch_index_list (self.cur_dn)
 			for (k,v) in idx.items ():
-				print k + '\t-> ' + v
+				print (k + '\t-> ' + v)
 		elif args [1] == 'add':
 			if self.cur_dn is None:
-				print 'First use: index domain <domain> | collection <colluuid>'
+				print ('First use: index domain <domain> | collection <colluuid>')
 				return False
 			cmd_index_add_by_dn (self.cur_dn, args [3], args [2])
 		elif args [1] == 'del':
 			if self.cur_dn is None:
-				print 'First use: index domain <domain> | collection <colluuid>'
+				print ('First use: index domain <domain> | collection <colluuid>')
 				return False
 			colluuid = fetch_index_colluid_by_dn_name (self.cur_dn, args [2])
 			cmd_index_del_by_dn (self.cur_dn, args [2], colluuid)
@@ -496,20 +496,20 @@ class Cmd (arpa2shell.cmd.Cmd):
 		elif args [1] == 'collection':
 			#UNUSED# self.cur_colluuid = args [2]
 			#TODO# infer cur_domain and construct cur_dn
-			print 'NOT IMPLEMENTED YET'
+			print ('NOT IMPLEMENTED YET')
 		elif args [1] == 'path':
 			if self.cur_dn is None:
-				print 'First use: index domain <domain> | collection <colluuid>'
+				print ('First use: index domain <domain> | collection <colluuid>')
 				return False
 			domain_and_up = ',associatedDomain=' + self.cur_domain + ',' + base
 			for leg in args [2:]:
 				idx = fetch_index_list (self.cur_dn)
-				if not idx.has_key (leg):
-					print 'Failed on', leg
+				if leg not in idx:
+					print ('Failed on', leg)
 					break
-				print leg + '\t-> ' + idx [leg]
+				print (leg + '\t-> ' + idx [leg])
 				self.cur_dn = 'resins=' + idx [leg] + domain_and_up
-			print 'Current DN is now', self.cur_dn
+			print ('Current DN is now', self.cur_dn)
 		else:
 			raise NotImplementedError ('Unexpected command ' + ' '.join (args))
 		return False
@@ -552,27 +552,27 @@ class Cmd (arpa2shell.cmd.Cmd):
 
 		if args [1] == 'list':
 			if self.cur_dn is None:
-				print 'First use: index collection <colluuid>'
+				print ('First use: index collection <colluuid>')
 				return False
 			for objkey in fetch_resource_list_by_dn (self.cur_dn):
-				print 'Resource:', objkey
+				print ('Resource:', objkey)
 		elif args [1] == 'add':
 			m = dn_2_coll_dom.match (self.cur_dn or '')
 			if m is None:
-				print 'First use: index collection <colluuid>'
+				print ('First use: index collection <colluuid>')
 				return False
 			(colluuid,domain) = m.groups ()
 			vars = { }
 			for var_val in args [2:]:
 				(var,val) = var_val.split ('=', 1)
 				vars [var] = val
-			print 'VARS =', vars
+			print ('VARS =', vars)
 			mediatype = vars.get ('type')
 			objname = vars.get ('name')
 			filename = vars.get ('file')
-			print 'TYPE/NAME/FILE =', (mediatype,objname,filename)
+			print ('TYPE/NAME/FILE =', (mediatype,objname,filename))
 			if not (mediatype and objname and filename):
-				print 'Please specify at least type= name= file='
+				print ('Please specify at least type= name= file=')
 				return False
 			blob = open (filename).read ()
 			#TODO# Future extension possible with more attributes
@@ -580,7 +580,7 @@ class Cmd (arpa2shell.cmd.Cmd):
 		elif args [1] == 'del':
 			m = dn_2_coll_dom.match (self.cur_dn or '')
 			if m is None:
-				print 'First use: index collection <colluuid>'
+				print ('First use: index collection <colluuid>')
 				return False
 			(colluuid,domain) = m.groups ()
 			cmd_resource_dl (domain, colluuid, args [3:])
