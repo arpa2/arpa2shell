@@ -155,10 +155,11 @@ class Cmd (old_cmd.Cmd):
 	   provided module as the shell to switch to.
 	"""
 	def bound_shell (self, name, module):
-		def switch_shell (self, *ignored):
+		def switch_shell (*ignored):
 			self.next_shell = module
 			return True
-		switch_shell.__doc__ = 'Switch to the ' + name + ' shell: ' + module.intro
+		switch_shell.__name__ = 'do_' + name
+		switch_shell.__doc__  = name + '\n\nSwitch to the ' + name + ' shell: ' + module.intro
 		return switch_shell
 
 	"""Add a shell object by introducing it to all
@@ -184,7 +185,8 @@ class Cmd (old_cmd.Cmd):
 			for (knownname,knownobj) in self.known:
 				knownobj.know_about (shellname, shellobj)
 		bound_switch = self.bound_shell (shellname, shellobj)
-		self.__class__.__dict__ ['do_' + shellname] = bound_switch
+		self.__dict__ ['do_' + shellname] = types.MethodType (cmdparser.CmdMethodDecorator() (bound_switch), self)
+		print ('Setup do_' + shellname + ' in', self, 'to', self.__dict__ ['do_' + shellname])
 
 	"""The main function to run this class.  It makes
 	   an instance and runs the cmdloop() on it.  This is

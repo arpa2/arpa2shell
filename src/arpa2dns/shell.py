@@ -14,7 +14,7 @@ import re
 from arpa2shell import cmdshell
 from arpa2shell import cmdparser
 
-import tightknot
+from arpa2shell.arpa2dns import tightknot
 
 import json
 
@@ -184,7 +184,7 @@ class Cmd (cmdshell.Cmd):
 		self.tlsa_config = (0,0,0)
 
 	def reset (self):
-		selt.tlsa_config = (0,0,0)
+		self.tlsa_config = (0,0,0)
 
 	@cmdparser.CmdMethodDecorator(token_factory=token_factory)
 	def do_zone (self, args, fields):

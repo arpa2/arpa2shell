@@ -5,12 +5,21 @@
 # From: Rick van Rein <rick@openfortress.nl>
 
 
-import libknot.control
-
 import os
 import sys
 import string
 import json
+
+
+#
+# Awful.
+#
+# Mismatch between Debian package and Python library.
+# Need to manually set package version.
+#
+import libknot.control
+#WONTWORK# libknot.control.load_lib ('libknot.so.5')
+#INSTEAD:# ln -s libknot.so.5 libknot.so.9
 
 
 #
@@ -43,7 +52,6 @@ import json
 #             ctl.send(KnotCtlType.END)
 #             ctl.close()
 #
-
 
 
 class TightKnot:

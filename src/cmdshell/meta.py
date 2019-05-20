@@ -10,7 +10,7 @@
 # such as from an OpenSSH daemon.
 #
 # This command assumes that setuptools has been used to
-# declare entry_points for the group arpa2shell.Cmd.subclasses
+# declare entry_points for the group arpa2shell.cmdshell.subclasses
 # with a class name in each.  This allows the separate
 # installation of arpa2shell packages that can then be
 # called from this meta-shell.
@@ -30,7 +30,7 @@ import pkg_resources
 import arpa2shell.cmdshell as a2cmd
 
 
-entrypoint_group = 'arpa2shell.cmd.subclasses'
+entrypoint_group = 'arpa2shell.cmdshell.subclasses'
 
 
 # Return a map of shells that can be reached.  The return
@@ -40,6 +40,7 @@ def named_shell_classes ():
 	shells = { }
 	for cmd in pkg_resources.iter_entry_points (group=entrypoint_group):
 		cmd_cls = cmd.load ()
+		print ('Command class from entrypoint:', cmd_cls)
 		if not issubclass (cmd_cls, a2cmd.Cmd):
 			raise Exception ('%s is not an ARPA2 Shell' % (cmd.name,))
 			continue
@@ -56,16 +57,22 @@ def main ():
 	arpa2shell = a2cmd.Cmd ()
 	shells = named_shell_classes ()
 	for (shnm,shcls) in shells.items ():
-		cmd = shcls.Cmd ()
+		print ('Shell class:', shnm, '::', shcls)
+		cmd = shcls ()
 		if not isinstance (cmd, a2cmd.Cmd):
 			raise Exception ('%s is not an ARPA2 shell' % (shnm,))
+		print ('Knowing about', shnm, 'with Cmd', cmd)
 		arpa2shell.know_about (shnm, cmd)
+		print ('Knowledge in reverse', arpa2shell)
 		cmd.know_about ('arpa2shell', arpa2shell)
 	current_shell = arpa2shell
 	while current_shell is not None:
+		print ('Current Shell', current_shell, '::', type (current_shell))
 		current_shell.next_shell = None
 		current_shell.cmdloop ()
+		print ('Current Shell', current_shell, '::', type (current_shell))
 		current_shell.reset ()
+		print ('Current Shell', current_shell, '::', type (current_shell))
 		current_shell = current_shell.next_shell
 
 

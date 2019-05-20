@@ -44,7 +44,7 @@ setuptools.setup (
 	# How?
 	entry_points = {
 		'arpa2shell.cmdshell.subclasses' : [
-			'arpa2shell=arpa2shell.cmdshell.meta:Cmd',
+		'arpa2shell=arpa2shell.cmdshell.base:Cmd',
 		],
 		'console_scripts' : [
 			'arpa2shell=arpa2shell.cmdshell.meta:main',

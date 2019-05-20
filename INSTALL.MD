@@ -57,6 +57,13 @@ python3 -m virtualenv /tmp/venv2
 
 ## Package Crafting
 
+The **easiest package build and install** is through `.egg` format,
+
+```
+python3 setup.py bdist_egg
+easy_install3 dist/arpa2shell-*-py3.*.egg
+```
+
 To **build all packages** for the various ARPA2 Shells, run
 
 ```

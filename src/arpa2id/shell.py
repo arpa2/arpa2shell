@@ -88,7 +88,7 @@ if whoami [:3] == 'dn:':
 whoami_uid = None
 whoami_dom = None
 whoami_a2id = None
-for rdn in map (string.strip, whoami.split (',')):
+for rdn in map (str.strip, whoami.split (',')):
 	if rdn [:4] == 'uid=' and whoami_uid is None:
 		whoami_uid = rdn [4:].strip ().lower ()
 	if rdn [:17] == 'associatedDomain=' and whoami_dom is None:
