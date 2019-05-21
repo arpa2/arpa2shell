@@ -64,8 +64,11 @@ info 'Preparing build environment'
 cmd mkdir -p build dist
 cmd rm -rf build/* dist/*
 
-info 'Creating distribution files, source and "binary" wheels'
-cmd ${PYTHON:-python} setup.py sdist bdist_wheel
+info 'Creating distribution files, source and "binary" eggs and wheels'
+cmd ${PYTHON:-python} setup.py sdist bdist_egg bdist_wheel
+
+info 'Local installation from .egg'
+cmd ${PYINST:-easy_install} dist/*-py*.egg
 
 info 'Local installation, directly from setup.py'
 cmd ${PYTHON:-python} setup.py install

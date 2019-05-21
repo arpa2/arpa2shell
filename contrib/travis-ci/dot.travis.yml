@@ -11,16 +11,18 @@ matrix:
       env: DOCKER_IMAGE=arpa2/build-pip
            PYTHON=python
            PIP=pip
+           PYINST=easy_install
     - sudo: required
       services:
         - docker
       env: DOCKER_IMAGE=arpa2/build-pip3
            PYTHON=python3
            PIP=pip3
+           PYINST=easy_install3
 
 install:
   - docker pull $DOCKER_IMAGE
 
 # Last statement is the ONLY ONE whose output matters
 script:
-  - docker run --rm -e PLAT=$PLAT -e PYTHON=$PYTHON -e PIP=$PIP -v `pwd`:/io $DOCKER_IMAGE /io/contrib/travis-ci/build-distro.sh
+  - docker run --rm -e PLAT=$PLAT -e PYTHON=$PYTHON -e PIP=$PIP -e PYINST=$PYINST -v `pwd`:/io $DOCKER_IMAGE /io/contrib/travis-ci/build-distro.sh
