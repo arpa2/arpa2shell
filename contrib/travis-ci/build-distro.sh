@@ -9,12 +9,12 @@
 info() {
 	echo
 	# Red=31, Bright=1
-	echo '[31;1m'"$@"'[0m'
+	echo '[31;1m'"$@"'[0m'
 }
 
 cmd_ok() {
 	# Green=32, Bright=1
-	echo '[32;1mbash$ '"$@"'[0m'
+	echo '[32;1mbash$ '"$@"'[0m'
 	"$@"
 }
 
@@ -29,7 +29,7 @@ maybe_exit() {
 
 cmd() {
 	# Green=32, Bright=1			# Yellow=33
-	echo '[32;1mbash$ '"$@"'[0m (dir is [33m'`pwd`'[0m)'
+	echo '[32;1mbash$ '"$@"'[0m (dir is [33m'`pwd`'[0m)'
 	"$@"
 	maybe_exit
 	# EXITVAL=$?
