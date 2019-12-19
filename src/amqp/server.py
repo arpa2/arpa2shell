@@ -113,7 +113,8 @@ class ARPA2ShellDaemon (MessagingHandler):
 	# Consume a GSSAPI token and update the context accordingly.
 	# Once GSSAPI is complete, trigger on_link_opened_securely()
 	#
-	def on_message_gssapi (self, event, (ctx,corlid)):
+	def on_message_gssapi (self, event, ctx_corlid):
+		(ctx,corlid) = ctx_corlid
 		assert (not ctx.complete)
 		gsstoken = event.message.body
 		#DEBUG# print 'received gssapi token size:', len (gsstoken)
@@ -244,11 +245,13 @@ class ARPA2ShellDaemon (MessagingHandler):
 		#DEBUG# print 'started'
 
 
-	def _decrypted_message (self, body, (ctx,corlid)):
+	def _decrypted_message (self, body, ctx_corlid):
+		(ctx,corlid) = ctx_corlid
 		body2 = json.loads (ctx.decrypt (body))
 		return body2
 
-	def _encrypted_message (self, body, (ctx,corlid), **kwargs):
+	def _encrypted_message (self, body, ctx_corlid, **kwargs):
+		(ctx,corlid) = ctx_corlid
 		try:
 			body2 = ctx.encrypt (json.dumps (body))
 		except GSSError as ge:
