@@ -166,7 +166,7 @@ def fetch_domain_list ():
 		#DEBUG# print ('Query response:', qr1)
 		# Note that we always set a single associatedDomain
 		# but domainRelatedObject does not set it as SINGLE-VALUE
-		return [ str (at.get ('associatedDomain', ['(undefined)']) [0],
+		return [ str (at.get ('associatedDomain', [b'(undefined)']) [0],
 		              'utf-8')
 		         for (dn,at) in qr1 ]
 	except NO_SUCH_OBJECT:
@@ -218,7 +218,7 @@ def fetch_collection_list (domain):
 		#DEBUG# print ('Query response:', qr1)
 		# Note that we always set a single resins
 		# but domainRelatedObject does not set it as SINGLE-VALUE
-		return [ str (at.get ('resins', ['(undefined)']) [0],
+		return [ str (at.get ('resins', [b'(undefined)']) [0],
 		              'utf-8')
 		         for (dn,at) in qr1 ]
 	except NO_SUCH_OBJECT:
@@ -327,7 +327,7 @@ def fetch_resource_list_by_dn (dn1):
 	#DEBUG# print ('Query response:', qr1)
 	# Treat the resource as SINGLE-VALUE
 	# as this is how we use it
-	return [ str (at.get ('resource', ['(undefined)']) [0],
+	return [ str (at.get ('resource', [b'(undefined)']) [0],
 	              'utf-8')
 	         for (dn,at) in qr1 ]
 def fetch_resource_list (domain, colluuid):
