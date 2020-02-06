@@ -11,8 +11,7 @@ import uuid
 import string
 import re
 
-from arpa2shell import cmdshell
-from arpa2shell import cmdparser
+from arpa2shell import cmdshell, cmdparser
 
 import tightknot
 

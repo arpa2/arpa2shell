@@ -12,18 +12,14 @@
 import os
 import sys
 import uuid
-import string
 import re
 
 from arpa2shell import cmdshell, cmdparser
-import cmd
 
 import ldap
 from ldap import MOD_ADD, MOD_DELETE, MOD_REPLACE, MOD_INCREMENT
 from ldap import SCOPE_BASE, SCOPE_ONELEVEL, SCOPE_SUBTREE
 from ldap import NO_SUCH_OBJECT, ALREADY_EXISTS, NOT_ALLOWED_ON_NONLEAF
-
-import riak
 
 
 # As assigned a fixed value on http://uuid.arpa2.org
@@ -38,6 +34,11 @@ import riak
 #    resource=,resins=,associatedDomain=,ou=Reservoir,...
 #
 reservoir_uuid = '904dfdb5-6b34-3818-b580-b9a0b4f7e7a9'
+
+
+# The home directory for ARPA2 Reservoir
+#
+reservoir_home = '/var/arpa2/reservoir'
 
 
 #
@@ -105,7 +106,7 @@ if whoami [:3] == 'dn:':
 whoami_uid = None
 whoami_dom = None
 whoami_a2id = None
-for rdn in map (string.strip, whoami.split (',')):
+for rdn in map (str.strip, whoami.split (',')):
 	if rdn [:4] == 'uid=' and whoami_uid is None:
 		whoami_uid = rdn [4:].strip ().lower ()
 	if rdn [:17] == 'associatedDomain=' and whoami_dom is None:
@@ -116,9 +117,6 @@ if whoami_uid is None or whoami_dom is None:
 	sys.stderr.write ('Failed to construct uid@associatedDomain from ' + whoami)
 else:
 	whoami_nai = whoami_uid + '@' + whoami_dom
-
-
-rkv = riak.RiakClient ()
 
 
 # Produce a UUID in the format we like it (lowercase string).
@@ -140,9 +138,7 @@ def cmd_domain_add (domain, orgname=None):
 	except ALREADY_EXISTS:
 		print ('Domain already exists.')
 		return
-	#TODO# bucket-type management is the admin's prerogative, so here???
-	os.system ("riak-admin bucket-type create '" + domain + "' '{\"props\":{}}'")
-	os.system ("riak-admin bucket-type activate '" + domain + "'")
+	os.mkdir (reservoir_home + '/' + domain)
 
 # Delete a domain from LDAP; Riak KV treats this level as implicitly created
 #
@@ -156,6 +152,7 @@ def cmd_domain_del (*domains):
 			print ('Remove other stuff first')
 		except NO_SUCH_OBJECT:
 			sys.stderr.write ('No such domain\n')
+		os.rmdir (reservoir_home + '/' + domain)
 
 # List domains in LDAP
 #
@@ -288,7 +285,7 @@ def cmd_resource_add (domain, colluuid, mediatype, objname, blob):
 		('cn', objname),
 	]
 	bkt = rkv.bucket_type (domain).bucket (colluuid)
-	obj = riak.RiakObject (rkv, bkt, objkey)
+	#RIAK# obj = riak.RiakObject (rkv, bkt, objkey)
 	obj.content_type = mediatype
 	obj.data = blob
 	print ('Content-Type:', obj.content_type)
@@ -407,15 +404,15 @@ def token_factory (token):
 #
 # The shell for arpa2reservoir (based on cmdparser)
 #
-@cmdparser.CmdClassDecorator()
-class Cmd (arpa2shell.cmd.Cmd):
+#TODO# @cmdparser.CmdClassDecorator()
+class Cmd (cmdshell.Cmd):
 
 	version = (0,0)
 	prompt = "arpa2reservoir> "
 	intro = "Edit Reservoir: Resource Collections and Resources.\nAnd Resource Indexes per Domain and per Resource Collection."
 
 	def __init__ (self):
-		arpa2shell.cmd.Cmd.__init__ (self)
+		cmdshell.Cmd.__init__ (self)
 		self.cur_domain = None
 		self.cur_dn = None
 		#UNUSED# self.cur_colluuid = None
