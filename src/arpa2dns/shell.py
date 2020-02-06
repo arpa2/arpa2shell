@@ -13,7 +13,7 @@ import re
 
 from arpa2shell import cmdshell, cmdparser
 
-import tightknot
+from ..arpa2dns import tightknot
 
 import json
 

@@ -184,7 +184,8 @@ class Cmd (old_cmd.Cmd):
 			for (knownname,knownobj) in self.known:
 				knownobj.know_about (shellname, shellobj)
 		bound_switch = self.bound_shell (shellname, shellobj)
-		self.__class__.__dict__ ['do_' + shellname] = bound_switch
+		#OLD# self.__class__.__dict__ ['do_' + shellname] = bound_switch
+		setattr (self.__class__, 'do_' + shellname, bound_switch)
 
 	"""The main function to run this class.  It makes
 	   an instance and runs the cmdloop() on it.  This is

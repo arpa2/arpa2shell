@@ -10,7 +10,7 @@
 # such as from an OpenSSH daemon.
 #
 # This command assumes that setuptools has been used to
-# declare entry_points for the group arpa2shell.Cmd.subclasses
+# declare entry_points for the group arpa2shell.cmdshell.subclasses
 # with a class name in each.  This allows the separate
 # installation of arpa2shell packages that can then be
 # called from this meta-shell.
@@ -27,10 +27,10 @@ import sys
 
 import pkg_resources
 
-import arpa2shell.cmdshell as a2cmd
+from .base import Cmd
+# from arpa2shell.cmdshell import base #as a2cmd
 
-
-entrypoint_group = 'arpa2shell.cmd.subclasses'
+entrypoint_group = 'arpa2shell.cmdshell.subclasses'
 
 
 # Return a map of shells that can be reached.  The return
@@ -39,8 +39,11 @@ entrypoint_group = 'arpa2shell.cmd.subclasses'
 def named_shell_classes ():
 	shells = { }
 	for cmd in pkg_resources.iter_entry_points (group=entrypoint_group):
+		#DEBUG# print ('Command name is', cmd.name, 'in', cmd.module_name)
+		#DEBUG# print ('Entry point offers', dir (cmd))
 		cmd_cls = cmd.load ()
-		if not issubclass (cmd_cls, a2cmd.Cmd):
+		#DEBUG# print ('Command class is', type (cmd_cls))
+		if not issubclass (cmd_cls, Cmd):
 			raise Exception ('%s is not an ARPA2 Shell' % (cmd.name,))
 			continue
 		shells [cmd.name] = cmd.load ()
@@ -53,15 +56,19 @@ def named_shell_classes ():
 # from arpa2shell.Cmd.
 #
 def main ():
-	arpa2shell = a2cmd.Cmd ()
+	arpa2base = Cmd ()
+	# arpa2base = sys.modules [__name__]
+	#DEBUG# print ('My shell module is', arpa2base, '::', type (arpa2base))
 	shells = named_shell_classes ()
+	#DEBUG# print ('All shell modules are', shells)
 	for (shnm,shcls) in shells.items ():
-		cmd = shcls.Cmd ()
-		if not isinstance (cmd, a2cmd.Cmd):
+		#DEBUG# print ('Shell class for', shnm, 'has', dir (shcls), '::', shcls)
+		cmd = shcls ()
+		if not isinstance (cmd, Cmd):
 			raise Exception ('%s is not an ARPA2 shell' % (shnm,))
-		arpa2shell.know_about (shnm, cmd)
-		cmd.know_about ('arpa2shell', arpa2shell)
-	current_shell = arpa2shell
+		arpa2base.know_about (shnm, cmd)
+		cmd.know_about ('arpa2shell', arpa2base)
+	current_shell = arpa2base
 	while current_shell is not None:
 		current_shell.next_shell = None
 		current_shell.cmdloop ()

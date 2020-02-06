@@ -94,9 +94,9 @@ setuptools.setup (
 
 	# How?
 	entry_points = {
-		'arpa2shell.cmdshell.subclasses' : [
-			'arpa2dns=arpa2shell.arpa2dns.shell:Cmd',
-		],
+		#NOTYET# 'arpa2shell.cmdshell.subclasses' : [
+		#NOTYET#	 'arpa2dns=arpa2shell.arpa2dns.shell:Cmd',
+		#NOTYET# ],
 		'console_scripts' : [
 			'arpa2dns=arpa2shell.arpa2dns.shell:main',
 		],
