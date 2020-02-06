@@ -12,18 +12,14 @@
 import os
 import sys
 import uuid
-import string
 import re
 
 from arpa2shell import cmdshell, cmdparser
-import cmd
 
 import ldap
 from ldap import MOD_ADD, MOD_DELETE, MOD_REPLACE, MOD_INCREMENT
 from ldap import SCOPE_BASE, SCOPE_ONELEVEL, SCOPE_SUBTREE
 from ldap import NO_SUCH_OBJECT, ALREADY_EXISTS, NOT_ALLOWED_ON_NONLEAF
-
-import riak
 
 
 # As assigned a fixed value on http://uuid.arpa2.org
@@ -38,6 +34,11 @@ import riak
 #    resource=,resins=,associatedDomain=,ou=Reservoir,...
 #
 reservoir_uuid = '904dfdb5-6b34-3818-b580-b9a0b4f7e7a9'
+
+
+# The home directory for ARPA2 Reservoir
+#
+reservoir_home = '/var/arpa2/reservoir'
 
 
 #
@@ -105,7 +106,7 @@ if whoami [:3] == 'dn:':
 whoami_uid = None
 whoami_dom = None
 whoami_a2id = None
-for rdn in map (string.strip, whoami.split (',')):
+for rdn in map (str.strip, whoami.split (',')):
 	if rdn [:4] == 'uid=' and whoami_uid is None:
 		whoami_uid = rdn [4:].strip ().lower ()
 	if rdn [:17] == 'associatedDomain=' and whoami_dom is None:
@@ -116,9 +117,6 @@ if whoami_uid is None or whoami_dom is None:
 	sys.stderr.write ('Failed to construct uid@associatedDomain from ' + whoami)
 else:
 	whoami_nai = whoami_uid + '@' + whoami_dom
-
-
-rkv = riak.RiakClient ()
 
 
 # Produce a UUID in the format we like it (lowercase string).
@@ -140,9 +138,7 @@ def cmd_domain_add (domain, orgname=None):
 	except ALREADY_EXISTS:
 		print ('Domain already exists.')
 		return
-	#TODO# bucket-type management is the admin's prerogative, so here???
-	os.system ("riak-admin bucket-type create '" + domain + "' '{\"props\":{}}'")
-	os.system ("riak-admin bucket-type activate '" + domain + "'")
+	os.mkdir (reservoir_home + '/' + domain)
 
 # Delete a domain from LDAP; Riak KV treats this level as implicitly created
 #
@@ -156,6 +152,7 @@ def cmd_domain_del (*domains):
 			print ('Remove other stuff first')
 		except NO_SUCH_OBJECT:
 			sys.stderr.write ('No such domain\n')
+		os.rmdir (reservoir_home + '/' + domain)
 
 # List domains in LDAP
 #
@@ -169,7 +166,9 @@ def fetch_domain_list ():
 		#DEBUG# print ('Query response:', qr1)
 		# Note that we always set a single associatedDomain
 		# but domainRelatedObject does not set it as SINGLE-VALUE
-		return [ at.get ('associatedDomain', ['undefined']) [0] for (dn,at) in qr1 ]
+		return [ str (at.get ('associatedDomain', [b'(undefined)']) [0],
+		              'utf-8')
+		         for (dn,at) in qr1 ]
 	except NO_SUCH_OBJECT:
 		return []
 
@@ -193,7 +192,7 @@ def cmd_collection_add (domain, collname):
 	]
 	print ('adding', dn1)
 	dap.add_s (dn1, at1)
-	#IMPLICIT NO DELETE???# rkv.bucket (colluuid, bucket_type=domain)
+	os.mkdir (reservoir_base + '/' + domain + '/' + colluuid)
 	print ('Collection:', colluuid)
 	return colluuid
 
@@ -202,10 +201,10 @@ def cmd_collection_add (domain, collname):
 #
 def cmd_collection_del (domain, *colluuids):
 	for colluuid in colluuids:
-		#IMPLICIT DEL???# rkv.bucket (colluuid, bucket_type=domain)
 		dn1 = 'resins=' + colluuid + ',associatedDomain=' + domain + ',' + base
 		#DEBUG# print ('deleting', dn1)
 		dap.delete_s (dn1)
+		os.rmdir (reservoir_base + '/' + domain + '/' + colluuid)
 
 # List the Resource Collections under a domain.
 #
@@ -213,13 +212,17 @@ def fetch_collection_list (domain):
 	try:
 		dn1 = 'associatedDomain=' + domain + ',' + base
 		fl1 = '(&(objectClass=reservoirCollection)(rescls=' + reservoir_uuid + '))'
-		al1 = ['resins']
+		al1 = ['resins','resourceInstance']
 		#DEBUG# print ('searching', dn1, fl1, al1)
 		qr1 = dap.search_s (dn1, SCOPE_ONELEVEL, filterstr=fl1, attrlist=al1)
 		#DEBUG# print ('Query response:', qr1)
 		# Note that we always set a single resins
 		# but domainRelatedObject does not set it as SINGLE-VALUE
-		return [ at.get ('resins', ['(undefined)']) [0] for (dn,at) in qr1 ]
+		return [ str (at.get ('resins',
+		              at.get ('resourceInstance',
+		                      [b'(undefined)'])) [0],
+		              'utf-8')
+		         for (dn,at) in qr1 ]
 	except NO_SUCH_OBJECT:
 		return []
 
@@ -256,6 +259,7 @@ def fetch_index_list (dn1):
 	#DEBUG# print ('Query result:', qr1)
 	for (dn,at) in qr1:
 		for rr in at.get ('reservoirRef', []):
+			rr = str (rr, 'utf-8')
 			try:
 				[v,k] = rr.split (' ', 1)
 				rv1 [k] = v
@@ -287,15 +291,12 @@ def cmd_resource_add (domain, colluuid, mediatype, objname, blob):
 		('mediaType', mediatype),
 		('cn', objname),
 	]
-	bkt = rkv.bucket_type (domain).bucket (colluuid)
-	obj = riak.RiakObject (rkv, bkt, objkey)
-	obj.content_type = mediatype
-	obj.data = blob
-	print ('Content-Type:', obj.content_type)
-	print ('Data:', obj.data)
-	obj.store ()
-	#DEBUG# print ('adding', dn1)
+	fn1 = '%s/%s/%s/%s' % (reservoir_home, domain, colluuid, objkey)
+	with open (fn1, 'w') as f:
+		f.write (blob)
 	dap.add_s (dn1, at1)
+	# print ('Domain:', domain)
+	# print ('Collection:', colluuid)
 	print ('Resource:', objkey)
 	return objkey
 
@@ -305,13 +306,13 @@ def cmd_resource_add (domain, colluuid, mediatype, objname, blob):
 def cmd_resource_del (domain, colluuid, *objkeys):
 	for objkey in objkeys:
 		dn1 = 'resource=' + objkey + ',resins=' + colluuid + ',associatedDomain=' + domain + ',' + base
-		bkt = rkv.bucket_type (domain).bucket (colluuid)
-		bkt.delete (objkey)
+		fn1 = '%s/%s/%s/%s' % (reservoir_home, domain, colluuid, objkey)
 		#DEBUG# print ('searching', dn1)
 		dap.search_s (dn1, SCOPE_BASE)
 		#DEBUG# print ('deleting', dn1)
 		try:
 			dap.delete_s (dn1)
+			os.remove (fn1)
 		except NOT_ALLOWED_ON_NONLEAF:
 			print ('Remove other stuff first')
 
@@ -325,7 +326,9 @@ def fetch_resource_list_by_dn (dn1):
 	#DEBUG# print ('Query response:', qr1)
 	# Treat the resource as SINGLE-VALUE
 	# as this is how we use it
-	return [ at.get ('resource', ['(undefined)']) [0] for (dn,at) in qr1 ]
+	return [ str (at.get ('resource', [b'(undefined)']) [0],
+	              'utf-8')
+	         for (dn,at) in qr1 ]
 def fetch_resource_list (domain, colluuid):
 	dn1 = 'resins=' + colluuid + ',associatedDomain=' + domain + ',' + base
 	return fetch_resource_list_by_dn (dn1)
@@ -349,12 +352,31 @@ def cmd_resource_list (domain=None, colluuid=None):
 # This finds the object in LDAP and subsequently downloads in from Riak KV.
 # Or... does it not even need to look into LDAP?
 #
+resource_attribute_map = {
+	'resource': 'Resource',
+	'mediaType': 'Content-Type',
+	'cn': 'Name',
+}
 def cmd_resource_get (domain, colluuid, objkey):
+	print ('Constructing dn1: resource=', objkey, ',resins=', colluuid, ',associatedDomain=', domain, ',', base)
 	dn1 = 'resource=' + objkey + ',resins=' + colluuid + ',associatedDomain=' + domain + ',' + base
-	bkt = rkv.bucket_type (domain).bucket (colluuid)
-	obj = bkt.get (objkey)
-	print ('Content-Type:', obj.content_type)
-	print ('Data:', obj.data)
+	fl1 = '(&(objectClass=reservoirResource)(resource=%s))' % objkey
+	al1 = resource_attribute_map.keys ()
+	#DEBUG# print ('searching', dn1, fl1, al1)
+	qr1 = dap.search_s (dn1, SCOPE_ONELEVEL, filterstr=fl1, attrlist=al1)
+	#DEBUG# print ('Query response:', qr1)
+	fn1 = '%s/%s/%s/%s' % (reservoir_home, domain, colluuid, objkey)
+	blob = open (fn1, 'rb').read ()
+	for (dn,at) in qr1:
+		for atnm in al1:
+			for atvals in at.get (atnm, []):
+				for atval in atvals:
+					if type (atval) == bytes:
+						atval = str (atval, 'utf-8')
+					print ('%s: %s' % (resource_attribute_map [atnm], atval))
+	print ('Content-Length', len (blob))
+	#TEST# print ('Data:', blob [:100])
+	print ('Data:', blob)
 
 
 
@@ -407,15 +429,15 @@ def token_factory (token):
 #
 # The shell for arpa2reservoir (based on cmdparser)
 #
-@cmdparser.CmdClassDecorator()
-class Cmd (arpa2shell.cmd.Cmd):
+#TODO# @cmdparser.CmdClassDecorator()
+class Cmd (cmdshell.Cmd):
 
 	version = (0,0)
 	prompt = "arpa2reservoir> "
 	intro = "Edit Reservoir: Resource Collections and Resources.\nAnd Resource Indexes per Domain and per Resource Collection."
 
 	def __init__ (self):
-		arpa2shell.cmd.Cmd.__init__ (self)
+		cmdshell.Cmd.__init__ (self)
 		self.cur_domain = None
 		self.cur_dn = None
 		#UNUSED# self.cur_colluuid = None
@@ -468,7 +490,7 @@ class Cmd (arpa2shell.cmd.Cmd):
 			if self.cur_dn is not None:
 				print (self.cur_dn)
 			else:
-				print ('**undefined**')
+				print ('(undefined)')
 		elif args [1] == 'list':
 			if self.cur_dn is None:
 				print ('First use: index domain <domain> | collection <colluuid>')
@@ -541,13 +563,21 @@ class Cmd (arpa2shell.cmd.Cmd):
 	@cmdparser.CmdMethodDecorator(token_factory=token_factory)
 	def do_resource (self, args, fields):
 		"""
-		resource ( list | add <var=val> [...] | del <key> [...] )
+		resource ( list
+		         | add <var=val> [...]
+		         | del <key> [...]
+		         | get <key> )
+
+		To be added:
+		         | set <key> <var=val> [...]
 
 		resource list -- Shows the resources in the current collection.
 		resource add -- Adds a resource to the current collection.
 		resource del -- Removes a resource from the current collection.
+		resource get -- Retrieves the resource and its metadata
 
-		Adding a resource involves various var=val fields... TODO
+		Resource adding requires metadata in var=val parameters,
+		at least type=... name=... file=... are required.  (TODO)
 		"""
 
 		if args [1] == 'list':
@@ -583,7 +613,14 @@ class Cmd (arpa2shell.cmd.Cmd):
 				print ('First use: index collection <colluuid>')
 				return False
 			(colluuid,domain) = m.groups ()
-			cmd_resource_dl (domain, colluuid, args [3:])
+			cmd_resource_del (domain, colluuid, args [2:])
+		elif args [1] == 'get':
+			m = dn_2_coll_dom.match (self.cur_dn or '')
+			if m is None:
+				print ('First use: index collection <colluuid>')
+				return False
+			(colluuid,domain) = m.groups ()
+			cmd_resource_get (domain, colluuid, args [2])
 		else:
 			raise NotImplementedError ('Unexpected command ' + ' '.join (args))
 		return False
