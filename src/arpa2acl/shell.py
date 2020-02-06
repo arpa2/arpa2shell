@@ -251,8 +251,6 @@ class Cmd (cmdshell.Cmd):
 			raise Exception ('Format: acl_add %rights selector...')
 		rgt = words [0]
 		for sel in words [1:]:
-			if sel [:1] == '%':
-				sel = '%' + sel
 			self.cur_acl.selector_add (sel, rgt)
 
 	"""Remove selector.... regardless of its current rights from the ACL in LDAP."""
