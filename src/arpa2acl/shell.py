@@ -115,8 +115,12 @@ class ACL ():
 			if qr1 == []:
 				raise NO_SUCH_OBJECT ()
 			[(dn1,at1)] = qr1
-			self.attr = at1
-			self.orig = at1.get ('acl', [])
+			self.attr = { }
+			for (k,vs) in at1.items ():
+				if type (k) == bytes:
+					k = str(k,'utf-8')
+				self.attr [k] = [ str(v,'utf-8') for v in vs ]
+			self.orig = self.attr.get ('acl', [])
 			for acl1 in self.orig:
 				rgt = None
 				for wrd1 in acl1.strip ().split ():
@@ -178,10 +182,10 @@ class ACL ():
 		#TODO# Maybe stupid: deleting everything and pushing it back is leads to more work downstream
 		mod = [ ]
 		for acl in self.orig:
-			mod.append ( (MOD_DELETE, 'acl', acl) )
+			mod.append ( (MOD_DELETE, 'acl', bytes(acl,'utf-8')) )
 		#TODO# Maybe stupid: one line would always change as a whole, leading to more work downstream
 		new = ' '.join (new)
-		mod.append ( (MOD_ADD,    'acl', new) )
+		mod.append ( (MOD_ADD,    'acl', bytes(new,'utf-8')) )
 		try:
 			print ('MOD =', mod)
 			dap.modify_s (self.dn, mod)
