@@ -199,7 +199,7 @@ setuptools.setup (
 	},
 
 	# Requirements
-	install_requires = [ 'arpa2shell', 'python-ldap', 'riak' ],
+	install_requires = [ 'arpa2shell', 'python-ldap' ],
 
 )
 
