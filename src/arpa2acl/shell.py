@@ -115,11 +115,21 @@ class ACL ():
 			if qr1 == []:
 				raise NO_SUCH_OBJECT ()
 			[(dn1,at1)] = qr1
-			self.attr = at1
-			self.orig = at1.get ('acl', [])
+			self.attr = { }
+			for (k,vs) in at1.items ():
+				if type (k) == bytes:
+					k = str(k,'utf-8')
+				k = {
+					'acl': 'accessControlList',
+					'resins': 'resourceInstance',
+					'rescls': 'resourceClass',
+				}.get (k, k)
+				self.attr [k] = [ str(v,'utf-8') for v in vs ]
+			self.orig = self.attr.get ('accessControlList', [])
 			for acl1 in self.orig:
 				rgt = None
 				for wrd1 in acl1.strip ().split ():
+					#DEBUG# print ('Considering word', wrd1, 'while right is', rgt)
 					if wrd1 [:1] == '%' and wrd1 [:2] != '%%':
 						# Set rights for following Selectors
 						rgt = wrd1
@@ -146,6 +156,9 @@ class ACL ():
 		return self.attr.get (attrtype, None)
 
 	def selector_del (self, selector):
+		if not selector in self.selector2rights:
+			print ('Selector', selector, 'unknown.  Got', self.selector2rights.keys ())
+			return
 		rights = self.selector2rights [selector]
 		print ('Removing rights', rights, 'from selector', selector)
 		del self.selector2rights [selector]
@@ -157,7 +170,7 @@ class ACL ():
 	def selector_add (self, selector, rights):
 		if selector in self.selector2rights:
 			raise Exception ('Selector is already set')
-		print ('Adding rights', rights, 'to selector', selector)
+		#DEBUG# print ('Adding rights', rights, 'to selector', selector)
 		self.selector2rights [selector] = rights
 		if rights in self.rights2selectors:
 			self.rights2selectors [rights].append (selector)
@@ -165,7 +178,7 @@ class ACL ():
 			self.rights2selectors [rights] = [selector]
 
 	def save (self):
-		print ('OLD =', self.orig)
+		#DEBUG# print ('OLD =', self.orig)
 		new = [ ]
 		for (rgt,sels) in self.rights2selectors.items ():
 			new.append (rgt)
@@ -174,16 +187,16 @@ class ACL ():
 					new.append ('%' + sel)
 				else:
 					new.append (sel)
-		print ('NEW =', new)
+		#DEBUG# print ('NEW =', new)
 		#TODO# Maybe stupid: deleting everything and pushing it back is leads to more work downstream
 		mod = [ ]
 		for acl in self.orig:
-			mod.append ( (MOD_DELETE, 'acl', acl) )
+			mod.append ( (MOD_DELETE, 'acl', bytes(acl,'utf-8')) )
 		#TODO# Maybe stupid: one line would always change as a whole, leading to more work downstream
 		new = ' '.join (new)
-		mod.append ( (MOD_ADD,    'acl', new) )
+		mod.append ( (MOD_ADD,    'acl', bytes(new,'utf-8')) )
 		try:
-			print ('MOD =', mod)
+			#DEBUG# print ('MOD =', mod)
 			dap.modify_s (self.dn, mod)
 			self.orig = [new]
 		except:
@@ -238,8 +251,6 @@ class Cmd (cmdshell.Cmd):
 			raise Exception ('Format: acl_add %rights selector...')
 		rgt = words [0]
 		for sel in words [1:]:
-			if sel [:1] == '%':
-				sel = '%' + sel
 			self.cur_acl.selector_add (sel, rgt)
 
 	"""Remove selector.... regardless of its current rights from the ACL in LDAP."""
