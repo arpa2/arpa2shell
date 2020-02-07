@@ -41,6 +41,7 @@ shell commands, and interpreted by a special package named
 This package builds a parse tree and recognises the input
 accordingly.
 
+**Commands.**
 These formats easily wrap into JSON.  As a rule, the literal
 tokens end up together in a dictionary key `"do_"` which
 holds a string of words or a list of word strings, prefixed
@@ -54,8 +55,11 @@ form would be
 "do_" : [ "arpa2dns", "dane", "del" ]
 ```
 
-The variable names in angular brackets become keys in the
-same dictionary, for instance
+**Variables.**
+In the command syntax, variable names in angular brackets ask
+for a value to be provided.  These variable names become keys in the
+same dictionary, for instance `<zone>` is provided in the JSON
+dictionary as
 
 ```
 "zone" : "orvelte.nep"
@@ -95,19 +99,25 @@ or, if that's easier,
  }
 ```
 
-The purpose of this form is to simplify things like escaping.
-Had the `to-be-matched` variable been of a binary nature, or
-had it included quotes, than JSON would offer a standard way
-of dealing with it in your most beloved programming language.
-No shell interface could beat that.
+**Escaping.**
+The last form is useful for fixed commands such as this DANE
+configuration.  But when parameters are generated, they may
+contain quotes and require complicating handling, like escaping.
+JSON libraries in your favourite language should help you to do
+this as standardised with any string you throw at them.  This
+saves you from one of the major problems involved with shell
+programming.  My pleasure.
 
+**Batches.**
 In everyday use, expect a JSON array to surround these JSON
 command formats.  This allows the composition of batches of
 shell commands, a bit like a shell script.  We shall need
 that if and when we introduce transactions.  You can already
 use it now to combine commands into one authenticated
 message, as long as they are all runnable on the same
-destination.
+destination.  You already need it if you set up shell state
+in one command to be used in following ones.  The state of
+all shells used is reset when the batch is complete.
 
 
 ## Streaming input, output and error
@@ -401,5 +411,6 @@ individual responses are included.
 There will probably be an extra JSON command such as
 `"arpa2txn"` to control transactional behaviour.  This
 shell is not currently supported, but batches of JSON
-commands are.
+commands are.  Shells can collect state during a batch;
+any such state will be reset after the batch.
 
