@@ -13,8 +13,6 @@ import re
 
 from arpa2shell import cmdshell, cmdparser
 
-from ..arpa2dns import tightknot
-
 import json
 
 
@@ -50,46 +48,46 @@ import json
 #
 
 
+from ..arpa2dns import tightknot
 
-#TODO# BE LAZY, BOOT KNOTD FROM HERE
-os.system ("/etc/init.d/knot start")
-import time
-time.sleep (2)
-
-
-
-#TODO# BE LAZY, START THINGS FROM HERE
-
-knot = tightknot.TightKnot ()
-
-knot.have_conf ()
-# knot.knot (cmd='conf-set', section='zone', item='domain', data='orvelte.nep')
-knot.add_zone ('orvelte.nep')
-knot.try_commit ()
-
-knot.have_zones ('orvelte.nep')
-knot.add_rr ('orvelte.nep', '@',
-		'3600', 'SOA',
-		'ns1.orvelte.nep. admin.orvelte.nep. 0 10800 3600 1814400 3600')
-# knot.knotc_shell ('zone-set orvelte.nep @ 3600 SOA ns1.orvelte.nep. admin.orvelte.nep. 0 10800 3600 1814400 3600', expect_ok=True)
-knot.add_rr ('orvelte.nep', '_443._tcp.www',
-		'3600', 'TLSA',
-		('%d %d %d %s' % (0,1,2,'6660')))
-# knot.knotc_shell ('zone-set orvelte.nep _443._tcp.www.orvelte.nep 3600 TLSA 0 1 2 666', expect_ok=True)
-knot.try_commit ()
-
-knot.have_zones ('orvelte.nep')
-knot.del_rr ('orvelte.nep', '_443._tcp.www',
-		'3600', 'TLSA',
-		('%d %d %d %s' % (0,1,2,'6660')))
-knot.try_commit ()
-
-knot.have_conf ()
-# knot.knot (cmd='conf-unset', section='zone', item='domain', data='orvelte.nep')
-knot.del_zone ('orvelte.nep')
-knot.force_abort ()
-
-knot.close ()
+#TESTCODE# #TODO# BE LAZY, BOOT KNOTD FROM HERE
+#TESTCODE# os.system ("/etc/init.d/knot start")
+#TESTCODE# import time
+#TESTCODE# time.sleep (2)
+#TESTCODE#
+#TESTCODE#
+#TESTCODE# #TODO# BE LAZY, START THINGS FROM HERE
+#TESTCODE# 
+#TESTCODE# knot = tightknot.TightKnot ()
+#TESTCODE# 
+#TESTCODE# knot.have_conf ()
+#TESTCODE# # knot.knot (cmd='conf-set', section='zone', item='domain', data='orvelte.nep')
+#TESTCODE# knot.add_zone ('orvelte.nep')
+#TESTCODE# knot.try_commit ()
+#TESTCODE# 
+#TESTCODE# knot.have_zones ('orvelte.nep')
+#TESTCODE# knot.add_rr ('orvelte.nep', '@',
+#TESTCODE# 		'3600', 'SOA',
+#TESTCODE# 		'ns1.orvelte.nep. admin.orvelte.nep. 0 10800 3600 1814400 3600')
+#TESTCODE# # knot.knotc_shell ('zone-set orvelte.nep @ 3600 SOA ns1.orvelte.nep. admin.orvelte.nep. 0 10800 3600 1814400 3600', expect_ok=True)
+#TESTCODE# knot.add_rr ('orvelte.nep', '_443._tcp.www',
+#TESTCODE# 		'3600', 'TLSA',
+#TESTCODE# 		('%d %d %d %s' % (0,1,2,'6660')))
+#TESTCODE# # knot.knotc_shell ('zone-set orvelte.nep _443._tcp.www.orvelte.nep 3600 TLSA 0 1 2 666', expect_ok=True)
+#TESTCODE# knot.try_commit ()
+#TESTCODE# 
+#TESTCODE# knot.have_zones ('orvelte.nep')
+#TESTCODE# knot.del_rr ('orvelte.nep', '_443._tcp.www',
+#TESTCODE# 		'3600', 'TLSA',
+#TESTCODE# 		('%d %d %d %s' % (0,1,2,'6660')))
+#TESTCODE# knot.try_commit ()
+#TESTCODE# 
+#TESTCODE# knot.have_conf ()
+#TESTCODE# # knot.knot (cmd='conf-unset', section='zone', item='domain', data='orvelte.nep')
+#TESTCODE# knot.del_zone ('orvelte.nep')
+#TESTCODE# knot.force_abort ()
+#TESTCODE# 
+#TESTCODE# knot.close ()
 
 
 #
@@ -179,11 +177,20 @@ class Cmd (cmdshell.Cmd):
 
 	def __init__ (self):
 		cmdshell.Cmd.__init__ (self)
-		self.knot = tightknot.TightKnot ()
+		global tightknot
+		if tightknot:
+			try:
+				self.knot = tightknot.TightKnot ()
+			except:
+				tightknot = None
+		if not tightknot:
+			self.knot = None
+			self.intro = self.intro + '\n###\n### DYSFUNCT KNOT DNS SETUP, ARPA2DNS WILL CRASH.  BAIL OUT NOW!\n###'
+			self.prompt = 'DYSFUNCT*' + self.prompt
 		self.tlsa_config = (0,0,0)
 
 	def reset (self):
-		selt.tlsa_config = (0,0,0)
+		self.tlsa_config = (0,0,0)
 
 	@cmdparser.CmdMethodDecorator(token_factory=token_factory)
 	def do_zone (self, args, fields):

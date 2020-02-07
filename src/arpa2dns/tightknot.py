@@ -5,12 +5,12 @@
 # From: Rick van Rein <rick@openfortress.nl>
 
 
-import libknot.control
-
 import os
 import sys
 import string
 import json
+
+import libknot.control
 
 
 #
