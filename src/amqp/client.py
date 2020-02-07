@@ -212,15 +212,12 @@ class ARPA2ShellClient (MessagingHandler):
 		#DEBUG# print 'closed down'
 
 
-# Read the input file
-#
-cmdbatch = json.loads (sys.stdin.read ())
 
-
-
-# The main program creates on ARPA2ShellDaemon and runs it indefinately.
+# The main program creates on ARPA2ShellClient and runs it on a JSON
+# batch read from stdin.
 #
 def main ():
+	cmdbatch = json.loads (sys.stdin.read ())
 	handler = ARPA2ShellClient ('amqp://localhost:5672', '/internetwide/arpa2.net/reservoir', cmdbatch)
 	contain = Container (handler)
 	contain.run ()

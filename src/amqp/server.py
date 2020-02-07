@@ -28,7 +28,7 @@ import sys
 import time
 import re
 
-import arpa2shell.cmd
+from arpa2shell import cmdshell
 
 import json
 import gssapi
@@ -132,7 +132,7 @@ class ARPA2ShellDaemon (MessagingHandler):
 
 
 	# Load the shell as a plugin module to this daemon.
-	# Shells must hold an arpa2shell.cmd.Cmd instance named Cmd.
+	# Shells must hold an cmdshell.Cmd instance named Cmd.
 	# The processes are retained for future re-use.
 	#
 	#TODO# We may want to be able to reset shells.
@@ -143,13 +143,13 @@ class ARPA2ShellDaemon (MessagingHandler):
 		if self.shell.has_key (modname):
 			return self.shell [modname]
 		try:
-			mod = __import__ (modname)
+			mod = __import__ ('arpa2shell.' + modname)
 		except ImportError:
 			raise Exception ('Shell not avaiable: ' +  modname)
 		if 'Cmd' not in dir (mod):
 			raise Exception ('Not a command shell: ' + modname)
 		cmd = mod.Cmd ()
-		if not isinstance (cmd, arpa2shell.cmd.Cmd):
+		if not isinstance (cmd, cmdshell.Cmd):
 			raise Exception ('Not an ARPA2 shell: ' + modname)
 		self.shell [modname] = cmd
 		return cmd
