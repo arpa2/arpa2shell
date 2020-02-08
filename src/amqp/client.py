@@ -177,6 +177,7 @@ class ARPA2ShellClient (MessagingHandler):
 		#TODO#JSON# Return JSON-parsed data in reply instead of just printing it
 		global bad
 		while reply != '':
+			print ('DEBUG: reply ::', type (reply), 'namely', reply)
 			endmsg = reply.find ('\narpa2')
 			if endmsg != -1:
 				endmsg = endmsg + 1

@@ -247,13 +247,13 @@ class ARPA2ShellDaemon (MessagingHandler):
 
 	def _decrypted_message (self, body, ctx_corlid):
 		(ctx,corlid) = ctx_corlid
-		body2 = json.loads (str (ctx.decrypt (body)), 'utf-8')
+		body2 = json.loads (str (ctx.decrypt (body), 'utf-8'))
 		return body2
 
 	def _encrypted_message (self, body, ctx_corlid, **kwargs):
 		(ctx,corlid) = ctx_corlid
 		try:
-			body2 = ctx.encrypt (bytes (json.dumps (body)), 'utf-8')
+			body2 = ctx.encrypt (bytes (json.dumps (body), 'utf-8'))
 		except GSSError as ge:
 			body2 = json.dumps ('GSSAPI Error: ' + str (ge))
 		return Message (body=body2, **kwargs)
