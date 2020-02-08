@@ -98,7 +98,7 @@ class ARPA2ShellDaemon (MessagingHandler):
 				usage = self.side)
 			#DEBUG# print 'server has self.cred setup as', self.cred.inquire ()
 		#DEBUG# print 'checking for match with corlid', corlid
-		if self.gctx.has_key (corlid):
+		if corlid in self.gctx:
 			ctx = self.gctx [corlid]
 		else:
 			ctx = gssapi.SecurityContext (
@@ -140,7 +140,7 @@ class ARPA2ShellDaemon (MessagingHandler):
 	def get_shell (self, modname):
 		if modname [:5] != 'arpa2':
 			raise Exception ('Not a command shell: ' + modname)
-		if self.shell.has_key (modname):
+		if modname in self.shell:
 			return self.shell [modname]
 		try:
 			mod = __import__ ('arpa2shell.' + modname)
@@ -170,7 +170,7 @@ class ARPA2ShellDaemon (MessagingHandler):
 	# Currently: <hdrname>: <value>\n...\n\n<body...>
 	#
 	def _parse_stdout (self, jout):
-		if jout.has_key ('stderr_'):
+		if 'stderr_' in jout:
 			return
 		try:
 			out = jout ['stdout_']
@@ -247,13 +247,13 @@ class ARPA2ShellDaemon (MessagingHandler):
 
 	def _decrypted_message (self, body, ctx_corlid):
 		(ctx,corlid) = ctx_corlid
-		body2 = json.loads (ctx.decrypt (body))
+		body2 = json.loads (str (ctx.decrypt (body)), 'utf-8')
 		return body2
 
 	def _encrypted_message (self, body, ctx_corlid, **kwargs):
 		(ctx,corlid) = ctx_corlid
 		try:
-			body2 = ctx.encrypt (json.dumps (body))
+			body2 = ctx.encrypt (bytes (json.dumps (body)), 'utf-8')
 		except GSSError as ge:
 			body2 = json.dumps ('GSSAPI Error: ' + str (ge))
 		return Message (body=body2, **kwargs)

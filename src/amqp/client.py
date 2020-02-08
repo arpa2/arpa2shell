@@ -122,13 +122,13 @@ class ARPA2ShellClient (MessagingHandler):
 	def _decrypted_message (self, body):
 		assert (self.gsta == 'comm')
 		ctx = self._have_gssapi_ctx ()
-		body2 = json.loads (ctx.decrypt (body))
+		body2 = json.loads (str (ctx.decrypt (body), 'utf-8'))
 		return body2
 
 	def _encrypted_message (self, body, **kwargs):
 		assert (self.gsta == 'comm')
 		ctx = self._have_gssapi_ctx ()
-		body2 = ctx.encrypt (json.dumps (body))
+		body2 = ctx.encrypt (bytes (json.dumps (body), 'utf-8'))
 		return Message (body=body2, **kwargs)
 
 	def on_start (self, event):
