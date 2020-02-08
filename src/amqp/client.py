@@ -177,11 +177,15 @@ class ARPA2ShellClient (MessagingHandler):
 		#TODO#JSON# Return JSON-parsed data in reply instead of just printing it
 		global bad
 		for jout in reply:
+			#DEBUG# print ('Got jout = %r\n' % jout)
 			if 'headers_' in jout and 'body_' in jout:
 				sys.stdout.write ('## HEADERS:\n%r\n\n' % jout ['headers_'])
 				sys.stdout.write ('## BODY:\n%s\n' % jout ['body_'])
 			elif 'stdout_' in jout:
 				sys.stdout.write (jout ['stdout_'])
+			else:
+				#DEBUG#
+				sys.stdout.write ('## NO OUTPUT\n')
 			if 'stderr_' in jout:
 				sys.stderr.write (jout ['stderr_'])
 				bad = True

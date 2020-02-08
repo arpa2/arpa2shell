@@ -204,8 +204,10 @@ class ARPA2ShellDaemon (MessagingHandler):
 			shell.gss_life = life + time.time ()
 			jout = shell.onecmd_json (command)
 			self._parse_stdout (jout)
+			return jout
 		except Exception as e:
-			sys.stderr.write ('Exception in run_command: %s\n' % e)
+			return { 'stderr_':
+				'Exception in run_command: %s\n' % e }
 		finally:
 			shell.gss_name = None
 			shell.gss_life = None
@@ -230,7 +232,7 @@ class ARPA2ShellDaemon (MessagingHandler):
 			shellnames.add (shell)
 			if life > 0:
 				try:
-					self.run_command (shell, jout, name, life)
+					jout = self.run_command (shell, jout, name, life)
 				except Exception as e:
 					jout ['stderr_'] = 'Exception in run_message: %s\n' % str (e)
 			else:
@@ -292,13 +294,14 @@ class ARPA2ShellDaemon (MessagingHandler):
 			body2 = self._decrypted_message (msg.body, (ctx,corlid))
 			#DEBUG# print 'decrypted to', body2
 			ans = self.run_message (body2,ctx)
+			#DEBUG# print ('Succeeded to run, ans = %r\n' % ans)
 		except GSSError as ge:
-			#DEBUG# print 'responding with gssapi error', ge
+			#DEBUG# print ('responding with gssapi error %r\n' % ge)
 			ans = [ { 'stderr_': 'GSS-API Error: %s\n' % str (e) } ]
 		except Exception as e:
-			#DEBUG# print 'responding with exception', e
+			#DEBUG# print ('responding with exception %r\n' % e)
 			ans = [ { 'stderr_': 'Exception in on_message: %s\n' % str (e) } ]
-		#DEBUG# print 'answer will be\n', ans,
+		#DEBUG# print ('answer will be\n', ans)
 		if msg.reply_to is not None:
 			#DEBUG# print 'composing reply'
 			rto = self._encrypted_message (ans, (ctx,corlid),
