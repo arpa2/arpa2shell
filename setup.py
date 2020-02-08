@@ -49,7 +49,7 @@ setuptools.setup (
 		'console_scripts' : [
 			'arpa2shell=arpa2shell.cmdshell.meta:main',
 			'arpa2api=arpa2shell.amqp.client:main [JSON]',
-			'arpa2apid=arpa2shell.amqp.server:main [JSON]',
+			'arpa2api.d=arpa2shell.amqp.server:main [JSON]',
 		],
 	},
 
