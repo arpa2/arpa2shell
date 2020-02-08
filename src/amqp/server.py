@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# arpa2amqp.d -- Receive requests to ARPA2 shells over AMQP.
+# arpa2api.d -- Receive requests to ARPA2 shells over AMQP.
 #
 #TODO#JSON# Integrate this into the arpa2shell.py module.
 #
@@ -139,13 +139,13 @@ class ARPA2ShellDaemon (MessagingHandler):
 	#
 	def get_shell (self, modname):
 		if modname [:5] != 'arpa2':
-			raise Exception ('Not a command shell: ' + modname)
+			raise Exception ('Not a command shell name: ' + modname)
 		if modname in self.shell:
 			return self.shell [modname]
 		try:
 			mod = __import__ ('arpa2shell.' + modname)
 		except ImportError:
-			raise Exception ('Shell not avaiable: ' +  modname)
+			raise Exception ('Shell not available: ' +  modname)
 		if 'Cmd' not in dir (mod):
 			raise Exception ('Not a command shell: ' + modname)
 		cmd = mod.Cmd ()
@@ -223,9 +223,9 @@ class ARPA2ShellDaemon (MessagingHandler):
 				try:
 					self.run_command (shell, jout, name, life)
 				except Exception as e:
-					jout ['stderr_'] = 'Exception: ' + str (e)
+					jout ['stderr_'] = 'Exception: %s\n' % str (e)
 			else:
-				jout ['stderr_'] = 'Access denied: Credentials expired'
+				jout ['stderr_'] = 'Access denied: Credentials expired\n'
 			reply.append (jout)
 		for shellname in shellnames:
 			#DEBUG# print 'resetting shell', shellname
@@ -285,10 +285,10 @@ class ARPA2ShellDaemon (MessagingHandler):
 			ans = self.run_message (body2,ctx)
 		except GSSError as ge:
 			#DEBUG# print 'responding with gssapi error', ge
-			ans = [ { 'stderr_': 'GSS-API Error: ' + str (e) } ]
+			ans = [ { 'stderr_': 'GSS-API Error: %s\n' % str (e) } ]
 		except Exception as e:
 			#DEBUG# print 'responding with exception', e
-			ans = [ { 'stderr_': 'Exception: ' + str (e) } ]
+			ans = [ { 'stderr_': 'Exception: %s\n' % str (e) } ]
 		#DEBUG# print 'answer will be\n', ans,
 		if msg.reply_to is not None:
 			#DEBUG# print 'composing reply'

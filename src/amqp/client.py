@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# arpa2amqp -- AMQP 1.0 remote shell inquiries.
+# arpa2api -- AMQP 1.0 remote shell inquiries.
 #
 # This command runs batches of shell commands on a
 # remote machine, sending it over AMQP.  Sets reply_to
@@ -176,37 +176,15 @@ class ARPA2ShellClient (MessagingHandler):
 		reply = self._decrypted_message (reply0)
 		#TODO#JSON# Return JSON-parsed data in reply instead of just printing it
 		global bad
-		while reply != '':
-			print ('DEBUG: reply ::', type (reply), 'namely', reply)
-			endmsg = reply.find ('\narpa2')
-			if endmsg != -1:
-				endmsg = endmsg + 1
-			submsg = reply [:endmsg]
-			#DEBUG# print 'processing submessage', submsg
-			if endmsg != -1:
-				reply = reply [endmsg:]
-			else:
-				reply = ''
-			endline = submsg.find ('\n')
-			line0 = submsg [:endline]
-			sys.stdout.write (line0.replace ('>>', '>', 1) + '\n')
-			while endline != -1:
-				submsg = submsg [endline+1:]
-				#DEBUG# print 'submessage', submsg
-				endline = submsg.find ('\n')
-				if endline != -1:
-					subsubmsg = submsg [:endline]
-				else:
-					subsubmsg = submsg
-				#DEBUG# print 'processing line', subsubmsg
-				if subsubmsg [:2] == '> ':
-					sys.stdout.write (subsubmsg [2:] + '\n')
-				elif subsubmsg [:3] == '>> ':
-					sys.stderr.write (subsubmsg [3:] + '\n')
-					bad = True
-				elif subsubmsg != '':
-					bad = True
-					sys.stderr.write ('Ill-formed line: ' + subsubmsg + '\n')
+		for jout in reply:
+			if 'headers_' in jout and 'body_' in jout:
+				sys.stdout.write ('## HEADERS:\n%r\n\n' % jout ['headers_'])
+				sys.stdout.write ('## BODY:\n%s\n' % jout ['body_'])
+			elif 'stdout_' in jout:
+				sys.stdout.write (jout ['stdout_'])
+			if 'stderr_' in jout:
+				sys.stderr.write (jout ['stderr_'])
+				bad = True
 		#DEBUG# print 'closing down'
 		event.connection.close ()
 		event.container.stop ()
