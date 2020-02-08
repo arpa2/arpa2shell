@@ -46,7 +46,7 @@ def named_shell_classes ():
 		if not issubclass (cmd_cls, Cmd):
 			raise Exception ('%s is not an ARPA2 Shell' % (cmd.name,))
 			continue
-		shells [cmd.name] = cmd.load ()
+		shells [cmd.name] = cmd_cls
 	return shells
 
 

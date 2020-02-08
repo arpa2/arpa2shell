@@ -28,6 +28,8 @@ import sys
 import time
 import re
 
+import pkg_resources
+
 from arpa2shell import cmdshell
 
 import json
@@ -38,6 +40,11 @@ from gssapi.raw.misc import GSSError
 from proton import Message
 from proton.handlers import MessagingHandler
 from proton.reactor import Container
+
+
+# The name of the entry group of shells
+#
+entrypoint_group = 'arpa2shell.cmdshell.subclasses'
 
 
 # Regular expressions to parse stdout_ information
@@ -142,17 +149,19 @@ class ARPA2ShellDaemon (MessagingHandler):
 			raise Exception ('Not a command shell name: ' + modname)
 		if modname in self.shell:
 			return self.shell [modname]
-		try:
-			mod = __import__ ('arpa2shell.' + modname)
-		except ImportError:
-			raise Exception ('Shell not available: ' +  modname)
-		if 'Cmd' not in dir (mod):
-			raise Exception ('Not a command shell: ' + modname)
-		cmd = mod.Cmd ()
-		if not isinstance (cmd, cmdshell.Cmd):
-			raise Exception ('Not an ARPA2 shell: ' + modname)
-		self.shell [modname] = cmd
-		return cmd
+		exc = 'Shell not available: ' +  modname
+		for ep in pkg_resources.iter_entry_points (
+					group=entrypoint_group,
+					name=modname):
+			#DEBUG# print ('GOT EP=%r :: %r' % (ep, type (ep)))
+			cmd_cls = ep.load ()
+			#DEBUG# print ('GOT CMD_CLS=%r :: %r' % (cmd_cls, type (cmd_cls)))
+			if issubclass (cmd_cls, cmdshell.Cmd):
+				cmd = cmd_cls ()
+				self.shell [modname] = cmd
+				return cmd
+			exc = 'Not an ARPA2 shell: ' + modname
+		raise Exception (exc)
 
 
 	# Prefix lines with the given prompt and return the text.
@@ -193,10 +202,10 @@ class ARPA2ShellDaemon (MessagingHandler):
 			shell = self.get_shell (shellname)
 			shell.gss_name = name
 			shell.gss_life = life + time.time ()
-			jout = shell.onecmd_json (jin)
+			jout = shell.onecmd_json (command)
 			self._parse_stdout (jout)
 		except Exception as e:
-			sys.stderr.write (str (e) + '\n')
+			sys.stderr.write ('Exception in run_command: %s\n' % e)
 		finally:
 			shell.gss_name = None
 			shell.gss_life = None
@@ -223,12 +232,12 @@ class ARPA2ShellDaemon (MessagingHandler):
 				try:
 					self.run_command (shell, jout, name, life)
 				except Exception as e:
-					jout ['stderr_'] = 'Exception: %s\n' % str (e)
+					jout ['stderr_'] = 'Exception in run_message: %s\n' % str (e)
 			else:
 				jout ['stderr_'] = 'Access denied: Credentials expired\n'
 			reply.append (jout)
 		for shellname in shellnames:
-			#DEBUG# print 'resetting shell', shellname
+			#DEBUG# print ('resetting shell', shellname)
 			self.get_shell (shellname).reset ()
 		#DEBUG# print 'message run complete'
 		return reply
@@ -288,7 +297,7 @@ class ARPA2ShellDaemon (MessagingHandler):
 			ans = [ { 'stderr_': 'GSS-API Error: %s\n' % str (e) } ]
 		except Exception as e:
 			#DEBUG# print 'responding with exception', e
-			ans = [ { 'stderr_': 'Exception: %s\n' % str (e) } ]
+			ans = [ { 'stderr_': 'Exception in on_message: %s\n' % str (e) } ]
 		#DEBUG# print 'answer will be\n', ans,
 		if msg.reply_to is not None:
 			#DEBUG# print 'composing reply'
