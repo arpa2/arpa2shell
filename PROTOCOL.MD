@@ -354,8 +354,8 @@ The layering that we have now is:
 
 We provide a library to take away the burden of using this,
 of course.  On the client side, we have a library named
-`arpa2amqp` and on the server side we use a program named
-`arpa2amqp.d` to sit and wait for access attempts over the
+`arpa2api` and on the server side we use a program named
+`arpa2apid` to sit and wait for access attempts over the
 stack shown above.
 
 As with the shells, there is no real reason to shield off

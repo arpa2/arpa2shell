@@ -133,8 +133,9 @@ the `setup.py` later if that makes sense.
 
 The currently supported shells are:
 
-  * The basic shell `arpa2shell`
-  * The basic client `arpa2client` for JSON / GSS-API / AMQP 1.0
-  * The basic server `arpa2server` for JSON / GSS-API / AMQP 1.0
+  * The meta-shell `arpa2shell`
+  * The basic client `arpa2api` for JSON / GSS-API / AMQP 1.0
+  * The basic server `arpa2apid` for JSON / GSS-API / AMQP 1.0
   * [arpa2dns](src/arpa2dns/README.MD) for DNS management
   * [arpa2id](src/arpa2id/README.MD) for Identity management
+  * [arpa2reservoir](src/arpa2dns/README.MD) for DNS management
