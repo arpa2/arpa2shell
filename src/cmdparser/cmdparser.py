@@ -1340,13 +1340,12 @@ def onecmd_json_method (self, jin):
     # This method will be run in a foreign context, so import dependencies
     import sys
     import json
-    # Note: cStringIO is faster, but ASCII-only
-    from StringIO import StringIO
+    from io import StringIO
 
     isstr = ( type(jin) in [type(''),type(u'')] )
     if isstr:
         jin = json.loads (jin)
-    if jin.has_key ('stdin_'):
+    if 'stdin_' in jin:
         instr = jin.get('stdin_', '')
         del jin['stdin_']
     else:
