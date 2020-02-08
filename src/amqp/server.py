@@ -183,12 +183,18 @@ class ARPA2ShellDaemon (MessagingHandler):
 			return
 		try:
 			out = jout ['stdout_']
-			(hd,tl) = out.split ('\n\n', 1)
+			if '\n\n' in out:
+				(hd,bd) = out.split ('\n\n', 1)
+			else:
+				if out [-1:] == '\n':
+					out = out [:-1]
+				(hd,bd) = (out,'')
+			print ('Header lines: """%r"""' % hd.split ('\n'))
 			headers = [ re_hdr.match (ln).groups () for ln in hd.split ('\n') ]
 			# Success, so fill "headers_" and "body_" keys
 			jout ['headers_'] = headers
-			jout ['body_'] = tl
-		except:
+			jout ['body_'] = bd
+		except Exception as e:
 			return
 
 
